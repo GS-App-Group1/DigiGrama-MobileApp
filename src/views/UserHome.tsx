@@ -33,6 +33,7 @@ type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
   ApplyCert: undefined;
+  CheckStatus: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -69,7 +70,10 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>Apply for grama certificate</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={checkStatus}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("CheckStatus")}
+      >
         <Text style={styles.buttonText}>Check status</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={getHelp}>

@@ -13,6 +13,7 @@ import { DashboardScreen } from "./src/views/Dashboard";
 import { HomeScreen } from "./src/views/Home";
 import UserHome from "./src/views/UserHome";
 import ApplyCert from "./src/views/ApplyCert";
+import CheckStatus from "./src/views/CheckStatus";
 
 const Stack = createNativeStackNavigator();
 
@@ -35,8 +36,21 @@ function App(): JSX.Element {
               }}
             />
           )}
-          <Stack.Screen name="UserHome" component={UserHome} />
-          <Stack.Screen name="ApplyCert" component={ApplyCert} />
+          <Stack.Screen
+            name="UserHome"
+            component={UserHome}
+            options={{ title: "User Home" }}
+          />
+          <Stack.Screen
+            name="ApplyCert"
+            component={ApplyCert}
+            options={{ title: "Apply Certificate" }}
+          />
+          <Stack.Screen
+            name="CheckStatus"
+            component={CheckStatus}
+            options={{ title: "Check Status" }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </UserContext.Provider>
