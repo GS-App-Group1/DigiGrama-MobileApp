@@ -12,6 +12,7 @@ import { UserContext } from "./src/contexts/UserContext";
 import { DashboardScreen } from "./src/views/Dashboard";
 import { HomeScreen } from "./src/views/Home";
 import UserHome from "./src/views/UserHome";
+import ApplyCert from "./src/views/ApplyCert";
 
 const Stack = createNativeStackNavigator();
 
@@ -35,6 +36,7 @@ function App(): JSX.Element {
             />
           )}
           <Stack.Screen name="UserHome" component={UserHome} />
+          <Stack.Screen name="ApplyCert" component={ApplyCert} />
         </Stack.Navigator>
       </NavigationContainer>
     </UserContext.Provider>

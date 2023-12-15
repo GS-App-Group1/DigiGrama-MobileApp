@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Image, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const styles = StyleSheet.create({
   container: {
@@ -21,15 +22,28 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   image: {
-    width: 100, // Adjust width as necessary
-    height: 100, // Adjust height as necessary
+    width: 300, // Adjust width as necessary
+    height: 300, // Adjust height as necessary
     resizeMode: "contain",
     margin: 20,
   },
   // Add additional styles as necessary
 });
+type RootStackParamList = {
+  Home: undefined;
+  UserHome: undefined; // Add parameters here if NewPage expects any props
+  ApplyCert: undefined;
+};
 
-const UserHome = () => {
+type HomeScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "UserHome"
+>;
+
+type Props = {
+  navigation: HomeScreenNavigationProp;
+};
+export const UserHome: React.FC<Props> = ({ navigation }) => {
   // Define your button actions
   const applyForCertificate = () => {
     console.log("Apply for certificate");
@@ -49,7 +63,10 @@ const UserHome = () => {
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={styles.image}
       />
-      <TouchableOpacity style={styles.button} onPress={applyForCertificate}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("ApplyCert")}
+      >
         <Text style={styles.buttonText}>Apply for grama certificate</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={checkStatus}>

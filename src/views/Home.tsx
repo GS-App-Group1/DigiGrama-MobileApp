@@ -12,6 +12,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
+  ApplyCert: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
