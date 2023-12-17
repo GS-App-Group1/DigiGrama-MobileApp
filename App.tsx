@@ -15,6 +15,9 @@ import UserHome from "./src/views/UserHome";
 import ApplyCert from "./src/views/ApplyCert";
 import CheckStatus from "./src/views/CheckStatus";
 
+//test
+// import { authorize } from 'react-native-app-auth';
+
 const Stack = createNativeStackNavigator();
 
 function App(): JSX.Element {

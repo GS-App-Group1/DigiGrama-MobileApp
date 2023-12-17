@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useContext } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-// import { authorize } from "react-native-app-auth";
+import { authorize } from "react-native-app-auth";
 import * as AppAuth from "react-native-app-auth";
 import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
 
@@ -22,6 +22,27 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 
 type Props = {
   navigation: HomeScreenNavigationProp;
+};
+
+//test
+
+const handleAuthorize = async () => {
+  try {
+    const result = await authorize({
+      issuer: 'https://api.asgardeo.io/t/interntest/oauth2/token"',
+      clientId: "JLo7FfeUqjXIZhy7JrtfqKCzIfka",
+      redirectUrl: "myapp://oauth2",
+      scopes: ["openid", "profile"],
+      serviceConfiguration: {
+        authorizationEndpoint:
+          "https://api.asgardeo.io/t/interntest/oauth2/authorize",
+        tokenEndpoint: "https://api.asgardeo.io/t/interntest/oauth2/token",
+      },
+    });
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
@@ -84,9 +105,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       >
         <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={signIn} style={homeScreenStyles.signInBtn}>
+      {/* <TouchableOpacity onPress={signIn} style={homeScreenStyles.signInBtn}>
         <Text style={homeScreenStyles.signInBtnText}>
           {isLoading ? "Loading..." : "Sign In"}
+        </Text>
+      </TouchableOpacity> */}
+      <TouchableOpacity
+        onPress={handleAuthorize}
+        style={homeScreenStyles.signInBtn}
+      >
+        <Text style={homeScreenStyles.signInBtnText}>
+          {isLoading ? "Loading..." : "New Authorize"}
         </Text>
       </TouchableOpacity>
     </View>
