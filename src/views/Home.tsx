@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { useContext } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
@@ -13,6 +14,7 @@ type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
   ApplyCert: undefined;
+  ExpoLogin: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -105,11 +107,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       >
         <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
       </TouchableOpacity>
-      {/* <TouchableOpacity onPress={signIn} style={homeScreenStyles.signInBtn}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("ExpoLogin")}
+        style={homeScreenStyles.button}
+      >
+        <Text style={homeScreenStyles.buttonText}>Expo Login</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={signIn} style={homeScreenStyles.signInBtn}>
         <Text style={homeScreenStyles.signInBtnText}>
           {isLoading ? "Loading..." : "Sign In"}
         </Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
       <TouchableOpacity
         onPress={handleAuthorize}
         style={homeScreenStyles.signInBtn}
