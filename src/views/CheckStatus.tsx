@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -57,43 +63,45 @@ const CheckStatus = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text
-        style={{
-          fontSize: 24,
-          fontWeight: "bold",
-          color: "black",
-          marginBottom: 20,
-        }}
-      >
-        DigiGrama
-      </Text>
-      <Text style={styles.label}>NIC</Text>
-      <Text style={styles.info}>{applicationData.nic}</Text>
+    <ScrollView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: "bold",
+            color: "black",
+            marginBottom: 20,
+          }}
+        >
+          DigiGrama
+        </Text>
+        <Text style={styles.label}>NIC</Text>
+        <Text style={styles.info}>{applicationData.nic}</Text>
 
-      <Text style={styles.label}>Address</Text>
-      <Text style={styles.info}>{applicationData.address}</Text>
+        <Text style={styles.label}>Address</Text>
+        <Text style={styles.info}>{applicationData.address}</Text>
 
-      <Text style={styles.label}>Civil Status</Text>
-      <Text style={styles.info}>{applicationData.civilStatus}</Text>
+        <Text style={styles.label}>Civil Status</Text>
+        <Text style={styles.info}>{applicationData.civilStatus}</Text>
 
-      <Text style={styles.label}>Present Occupation</Text>
-      <Text style={styles.info}>{applicationData.occupation}</Text>
+        <Text style={styles.label}>Present Occupation</Text>
+        <Text style={styles.info}>{applicationData.occupation}</Text>
 
-      <Text style={styles.label}>Reason</Text>
-      <Text style={styles.info}>{applicationData.reason}</Text>
+        <Text style={styles.label}>Reason</Text>
+        <Text style={styles.info}>{applicationData.reason}</Text>
 
-      <TouchableOpacity
-        style={[
-          styles.statusButton,
-          { backgroundColor: statusColor[applicationData.status] },
-        ]}
+        <TouchableOpacity
+          style={[
+            styles.statusButton,
+            { backgroundColor: statusColor[applicationData.status] },
+          ]}
 
-        // If the button should be interactive, you can add onPress here
-      >
-        <Text style={styles.statusButtonText}>{applicationData.status}</Text>
-      </TouchableOpacity>
-    </View>
+          // If the button should be interactive, you can add onPress here
+        >
+          <Text style={styles.statusButtonText}>{applicationData.status}</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 

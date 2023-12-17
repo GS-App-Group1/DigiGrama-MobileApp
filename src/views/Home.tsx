@@ -82,7 +82,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         onPress={() => navigation.navigate("UserHome")}
         style={homeScreenStyles.button}
       >
-        <Text style={homeScreenStyles.buttonText}>Go to User Home</Text>
+        <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={signIn} style={homeScreenStyles.signInBtn}>
         <Text style={homeScreenStyles.signInBtnText}>
