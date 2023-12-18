@@ -1,15 +1,28 @@
 // @ts-nocheck
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useContext } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { authorize } from "react-native-app-auth";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Button,
+  ScrollView,
+} from "react-native";
 import * as AppAuth from "react-native-app-auth";
 import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
-
-// import { config } from "../config";
+import "core-js/stable/atob";
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
+import { jwtDecode } from "jwt-decode";
 import { UserContext } from "../contexts/UserContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as SecureStore from "expo-secure-store";
 
+async function save(key, value) {
+  await SecureStore.setItemAsync(key, value);
+}
 type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
@@ -26,47 +39,88 @@ type Props = {
   navigation: HomeScreenNavigationProp;
 };
 
-//test
+WebBrowser.maybeCompleteAuthSession();
 
-const handleAuthorize = async () => {
-  try {
-    const result = await authorize({
-      issuer: 'https://api.asgardeo.io/t/interntest/oauth2/token"',
-      clientId: "JLo7FfeUqjXIZhy7JrtfqKCzIfka",
-      redirectUrl: "myapp://oauth2",
-      scopes: ["openid", "profile"],
-      serviceConfiguration: {
-        authorizationEndpoint:
-          "https://api.asgardeo.io/t/interntest/oauth2/authorize",
-        tokenEndpoint: "https://api.asgardeo.io/t/interntest/oauth2/token",
-      },
-    });
-    console.log(result);
-  } catch (error) {
-    console.error(error);
-  }
-};
+const redirectUri = AuthSession.makeRedirectUri();
+
+const CLIENT_ID = "JLo7FfeUqjXIZhy7JrtfqKCzIfka";
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  // export const HomeScreen = () => {
-  const config = {
-    issuer: "https://api.asgardeo.io/t/interntest/oauth2/token",
-    clientId: "JLo7FfeUqjXIZhy7JrtfqKCzIfka",
-    redirectUrl: "myapp://oauth2",
-    scopes: ["openid", "profile"],
-    postLogoutRedirectUrl: "myapp.auth://example",
-  };
+  const discovery = AuthSession.useAutoDiscovery(
+    "https://api.asgardeo.io/t/interntest/oauth2/token"
+  );
+  const [tokenResponse, setTokenResponse] = useState({});
+  const [decodedIdToken, setDecodedIdToken] = useState({});
+  const [key, onChangeKey] = React.useState("Your key here");
+  const [value, onChangeValue] = React.useState("Your value here");
+
+  const [request, result, promptAsync] = AuthSession.useAuthRequest(
+    {
+      redirectUri,
+      clientId: CLIENT_ID,
+      responseType: "code",
+      scopes: ["openid", "profile", "email", "address", "phone"],
+    },
+    discovery
+  );
 
   const { setIsLoggedIn } = useContext(UserContext);
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const getAccessToken = () => {
+    console.log("result logged:" + JSON.stringify(result));
+    setIsLoading(true);
+    if (result?.params?.code) {
+      fetch("https://api.asgardeo.io/t/interntest/oauth2/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `grant_type=authorization_code&code=${result?.params?.code}&redirect_uri=${redirectUri}&client_id=${CLIENT_ID}&code_verifier=${request?.codeVerifier}`,
+      })
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          // console.log("data logged:" + JSON.stringify(data));
+          const decodedToken = jwtDecode(data.id_token);
+          setTokenResponse(data);
+          setDecodedIdToken(decodedToken);
+          console.log("decodedIdToken logged:" + JSON.stringify(decodedToken));
+          save("accessToken", JSON.stringify(decodedToken));
+        })
+        .catch((err) => {
+          console.log(err);
+          setIsLoading(false);
+        });
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    (async function setResult() {
+      if (result) {
+        if (result.error) {
+          Alert.alert(
+            "Authentication error",
+            result.params.error_description || "something went wrong"
+          );
+          return;
+        }
+        if (result.type === "success") {
+          getAccessToken();
+          console.log(result.params);
+        }
+      }
+    })();
+  }, [result]);
+
   const signIn = async () => {
     try {
-      console.log("setIsLoadings staus:" + isLoading);
+      () => promptAsync();
       setIsLoading(true);
-      console.log("setIsLoadings staus:" + isLoading);
-      const result = await AppAuth.authorize(config);
+      console.log("setIsLoading status:" + isLoading);
       console.log("result logged:" + result);
 
       RNSecureStorage.set("authorizeResponse", JSON.stringify(result), {
@@ -88,12 +142,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <View style={homeScreenStyles.container}>
+    <ScrollView contentContainerStyle={homeScreenStyles.container}>
       <Text style={homeScreenStyles.title}>Digi Grama App</Text>
       <Image
         source={require("../../assets/Images/main.png")}
         style={homeScreenStyles.imageStyle}
       />
+      {decodedIdToken && (
+        <Text style={homeScreenStyles.additionalText}>
+          Welcome {decodedIdToken.given_name || ""}!
+        </Text>
+      )}
       <Text style={homeScreenStyles.additionalText}>
         Get your Graama Certficiate without any hassle
       </Text>
@@ -103,30 +162,23 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       />
       <TouchableOpacity
         onPress={() => navigation.navigate("UserHome")}
-        style={homeScreenStyles.button}
+        style={homeScreenStyles.signInBtn}
       >
         <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => navigation.navigate("ExpoLogin")}
-        style={homeScreenStyles.button}
-      >
-        <Text style={homeScreenStyles.buttonText}>Expo Login</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={signIn} style={homeScreenStyles.signInBtn}>
-        <Text style={homeScreenStyles.signInBtnText}>
-          {isLoading ? "Loading..." : "Sign In"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={handleAuthorize}
-        style={homeScreenStyles.signInBtn}
-      >
-        <Text style={homeScreenStyles.signInBtnText}>
-          {isLoading ? "Loading..." : "New Authorize"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+
+      <View>
+        {decodedIdToken && (
+          <TouchableOpacity
+            disabled={!request}
+            onPress={() => promptAsync()}
+            style={homeScreenStyles.signInBtn}
+          >
+            <Text style={homeScreenStyles.signInBtnText}>Sign In</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 

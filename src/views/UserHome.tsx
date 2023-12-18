@@ -1,7 +1,27 @@
-import React from "react";
-import { View, Image, TouchableOpacity, Text, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  View,
+  Image,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+} from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { UserContext } from "../contexts/UserContext";
+import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
+import { useContext } from "react";
+// const { isLoggedIn } = useContext(UserContext);
+import * as SecureStore from "expo-secure-store";
 
+async function getValueFor(key: string) {
+  let result = await SecureStore.getItemAsync(key);
+  if (result) {
+    return result;
+  } else {
+    return;
+  }
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -58,12 +78,27 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
     console.log("Get help");
   };
 
+  const [accessToken, setAccessToken] = useState("");
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const token = await getValueFor("accessToken");
+      if (token) {
+        setAccessToken(token);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  console.log("SS Value: ", accessToken);
   return (
     <View style={styles.container}>
       <Image
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={styles.image}
       />
+
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ApplyCert")}
