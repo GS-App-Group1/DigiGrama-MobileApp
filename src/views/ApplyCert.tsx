@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import * as SecureStore from "expo-secure-store";
 
 import {
   Alert,
@@ -11,6 +12,7 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
+import { UserContext } from "../contexts/UserContext";
 
 const styles = StyleSheet.create({
   container: {
@@ -90,6 +92,22 @@ export const ApplyCert = () => {
   const [gsDivision, setGsDivision] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { isLoggedIn } = useContext(UserContext);
+
+  async function getValueFor(key: string) {
+    let result = await SecureStore.getItemAsync(key);
+    if (result) {
+      try {
+        return JSON.parse(result); // Parsing the JSON string
+      } catch (e) {
+        console.error("Error parsing JSON: ", e);
+        return null; // Return null or an appropriate default value
+      }
+    } else {
+      return null; // Return null or an appropriate default value
+    }
+  }
 
   const handleSubmit = async () => {
     setIsLoading(true); // Start loading

@@ -53,6 +53,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [decodedIdToken, setDecodedIdToken] = useState({});
   const [key, onChangeKey] = React.useState("Your key here");
   const [value, onChangeValue] = React.useState("Your value here");
+  const { isLoggedIn } = useContext(UserContext);
 
   const [request, result, promptAsync] = AuthSession.useAuthRequest(
     {
@@ -89,10 +90,12 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           setDecodedIdToken(decodedToken);
           console.log("decodedIdToken logged:" + JSON.stringify(decodedToken));
           save("accessToken", JSON.stringify(decodedToken));
+          setIsLoggedIn(true);
         })
         .catch((err) => {
           console.log(err);
           setIsLoading(false);
+          serIsLoggedIn(false);
         });
     }
     setIsLoading(false);
@@ -116,31 +119,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     })();
   }, [result]);
 
-  const signIn = async () => {
-    try {
-      () => promptAsync();
-      setIsLoading(true);
-      console.log("setIsLoading status:" + isLoading);
-      console.log("result logged:" + result);
-
-      RNSecureStorage.set("authorizeResponse", JSON.stringify(result), {
-        accessible: ACCESSIBLE.WHEN_UNLOCKED,
-      }).then(
-        (_res) => {
-          setIsLoggedIn(true);
-        },
-        (err) => {
-          throw err;
-        }
-      );
-    } catch (error) {
-      console.log(error);
-      setIsLoggedIn(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <ScrollView contentContainerStyle={homeScreenStyles.container}>
       <Text style={homeScreenStyles.title}>Digi Grama App</Text>
@@ -160,21 +138,30 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={homeScreenStyles.imageStyle}
       />
-      <TouchableOpacity
-        onPress={() => navigation.navigate("UserHome")}
-        style={homeScreenStyles.signInBtn}
-      >
-        <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
-      </TouchableOpacity>
-
+      {!isLoggedIn && (
+        <TouchableOpacity
+          onPress={() => navigation.navigate("UserHome")}
+          style={homeScreenStyles.signInBtn}
+        >
+          <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
+        </TouchableOpacity>
+      )}
       <View>
-        {decodedIdToken && (
+        {!isLoggedIn && (
           <TouchableOpacity
             disabled={!request}
             onPress={() => promptAsync()}
             style={homeScreenStyles.signInBtn}
           >
             <Text style={homeScreenStyles.signInBtnText}>Sign In</Text>
+          </TouchableOpacity>
+        )}
+        {isLoggedIn && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("UserHome")}
+            style={homeScreenStyles.signInBtn}
+          >
+            <Text style={homeScreenStyles.buttonText}>Go to Dashboard</Text>
           </TouchableOpacity>
         )}
       </View>

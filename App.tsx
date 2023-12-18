@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { UserContext } from "./src/contexts/UserContext";
-import { DashboardScreen } from "./src/views/Dashboard";
+// import { DashboardScreen } from "./src/views/Dashboard";
 import { HomeScreen } from "./src/views/Home";
 import UserHome from "./src/views/UserHome";
 import ApplyCert from "./src/views/ApplyCert";
@@ -21,8 +21,8 @@ function App(): JSX.Element {
     <UserContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Home">
-          {isLoggedIn ? (
-            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          {false ? (
+            <Stack.Screen name="Dashboard" component={UserHome} />
           ) : (
             <Stack.Screen
               name="Home"

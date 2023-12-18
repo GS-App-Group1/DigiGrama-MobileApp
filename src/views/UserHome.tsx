@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -17,11 +18,17 @@ import * as SecureStore from "expo-secure-store";
 async function getValueFor(key: string) {
   let result = await SecureStore.getItemAsync(key);
   if (result) {
-    return result;
+    try {
+      return JSON.parse(result); // Parsing the JSON string
+    } catch (e) {
+      console.error("Error parsing JSON: ", e);
+      return null; // Return null or an appropriate default value
+    }
   } else {
-    return;
+    return null; // Return null or an appropriate default value
   }
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -66,6 +73,8 @@ type Props = {
 };
 export const UserHome: React.FC<Props> = ({ navigation }) => {
   // Define your button actions
+  const { isLoggedIn } = useContext(UserContext);
+
   const applyForCertificate = () => {
     console.log("Apply for certificate");
   };
@@ -90,10 +99,10 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
 
     fetchToken();
   }, []);
-
   console.log("SS Value: ", accessToken);
   return (
     <View style={styles.container}>
+      {isLoggedIn && <Text>Hi {accessToken.given_name} </Text>}
       <Image
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={styles.image}
