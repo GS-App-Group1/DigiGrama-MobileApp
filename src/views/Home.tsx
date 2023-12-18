@@ -19,6 +19,7 @@ import { jwtDecode } from "jwt-decode";
 import { UserContext } from "../contexts/UserContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as SecureStore from "expo-secure-store";
+import { LoadingIndicator } from "../components/LoadingIndicator";
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
@@ -95,7 +96,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         .catch((err) => {
           console.log(err);
           setIsLoading(false);
-          serIsLoggedIn(false);
+          setIsLoggedIn(false);
         });
     }
     setIsLoading(false);
@@ -121,13 +122,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={homeScreenStyles.container}>
+      {isLoading && <LoadingIndicator loadingText="Signing In!" />}
       <Text style={homeScreenStyles.title}>Digi Grama App</Text>
       <Image
         source={require("../../assets/Images/main.png")}
-        style={homeScreenStyles.imageStyle}
+        style={homeScreenStyles.logoImage}
       />
       {decodedIdToken && (
-        <Text style={homeScreenStyles.additionalText}>
+        <Text style={homeScreenStyles.welcomeText}>
           Welcome {decodedIdToken.given_name || ""}!
         </Text>
       )}
@@ -136,12 +138,12 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       </Text>
       <Image
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
-        style={homeScreenStyles.imageStyle}
+        style={homeScreenStyles.mainImage}
       />
       {!isLoggedIn && (
         <TouchableOpacity
           onPress={() => navigation.navigate("UserHome")}
-          style={homeScreenStyles.signInBtn}
+          style={homeScreenStyles.button}
         >
           <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
         </TouchableOpacity>
@@ -151,17 +153,30 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <TouchableOpacity
             disabled={!request}
             onPress={() => promptAsync()}
-            style={homeScreenStyles.signInBtn}
+            style={homeScreenStyles.button}
           >
-            <Text style={homeScreenStyles.signInBtnText}>Sign In</Text>
+            <Text style={homeScreenStyles.buttonText}>Sign In</Text>
           </TouchableOpacity>
         )}
         {isLoggedIn && (
           <TouchableOpacity
             onPress={() => navigation.navigate("UserHome")}
-            style={homeScreenStyles.signInBtn}
+            style={homeScreenStyles.button}
           >
             <Text style={homeScreenStyles.buttonText}>Go to Dashboard</Text>
+          </TouchableOpacity>
+        )}
+        {isLoggedIn && (
+          <TouchableOpacity
+            style={homeScreenStyles.button}
+            onPress={() => {
+              save("accessToken", "");
+              setTokenResponse("");
+              setDecodedIdToken("");
+              setIsLoggedIn(false);
+            }}
+          >
+            <Text style={homeScreenStyles.buttonText}>Logout</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -184,7 +199,7 @@ const homeScreenStyles = StyleSheet.create({
     padding: 15,
     marginVertical: 5,
     borderRadius: 5,
-    width: "90%", // Adjust width as necessary
+    width: 300, // Adjust width as necessary
   },
   buttonText: {
     textAlign: "center",
@@ -206,9 +221,14 @@ const homeScreenStyles = StyleSheet.create({
     color: "white",
     fontSize: 20,
   },
-  imageStyle: {
+  logoImage: {
+    height: 100,
+    width: "70%",
+    resizeMode: "contain",
+  },
+  mainImage: {
     // Add styles for your images
-    width: "100%",
+    width: "70%",
     height: 200, // Adjust as needed
     resizeMode: "contain",
   },
@@ -217,5 +237,12 @@ const homeScreenStyles = StyleSheet.create({
     fontSize: 16,
     marginVertical: 10,
     textAlign: "center",
+  },
+  welcomeText: {
+    // Styles for the welcome text
+    fontSize: 20,
+    marginVertical: 10,
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });

@@ -1,7 +1,9 @@
 // @ts-nocheck
 import React, { useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { UserContext } from "../contexts/UserContext";
 import { Picker } from "@react-native-picker/picker";
+import { LoadingIndicator } from "../components/LoadingIndicator";
 
 import {
   Alert,
@@ -14,14 +16,13 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
-import { UserContext } from "../contexts/UserContext";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
     alignItems: "center",
-    paddingTop: 50,
+    paddingTop: 30,
   },
   input: {
     width: "90%",
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: "center",
     marginTop: 20,
+    marginBottom: 20,
   },
   buttonText: {
     color: "white",
@@ -90,26 +92,6 @@ const styles = StyleSheet.create({
   // Add any additional styling as necessary
 });
 
-const LoadingIndicator = () => {
-  return (
-    <Modal
-      transparent={true}
-      animationType="none"
-      visible={true}
-      onRequestClose={() => {}}
-    >
-      <View style={styles.modalBackground}>
-        <View style={styles.activityIndicatorWrapper}>
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text style={styles.loadingText}>
-            Submitting Grama Certificate Request...
-          </Text>
-        </View>
-      </View>
-    </Modal>
-  );
-};
-
 export const ApplyCert = () => {
   const [nic, setNic] = useState("");
   const [address, setAddress] = useState("");
@@ -148,8 +130,9 @@ export const ApplyCert = () => {
 
   const handleSubmit = async () => {
     setIsLoading(true); // Start loading
+    // const API_KEY = process.env.EXPO_PUBLIC_SUBMIT_REQUEST_API;
     const API_KEY =
-      "eyJraWQiOiJnYXRld2F5X2NlcnRpZmljYXRlX2FsaWFzIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJiNGI1ZGFmMC1jZThjLTRiODktODFjZC1jMmMyNjNiYzMyODBAY2FyYm9uLnN1cGVyIiwiYXVkIjoiY2hvcmVvOmRlcGxveW1lbnQ6cHJvZHVjdGlvbiIsImlzcyI6Imh0dHBzOlwvXC9zdHMuY2hvcmVvLmRldjo0NDNcL2FwaVwvYW1cL3B1Ymxpc2hlclwvdjJcL2FwaXNcL2ludGVybmFsLWtleSIsImtleXR5cGUiOiJQUk9EVUNUSU9OIiwic3Vic2NyaWJlZEFQSXMiOlt7InN1YnNjcmliZXJUZW5hbnREb21haW4iOm51bGwsIm5hbWUiOiJNYWluU2VydmljZSAtIE1haW5BUEkiLCJjb250ZXh0IjoiXC9jZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDhcL2NxeHFcL21haW5zZXJ2aWNlXC9tYWluYXBpLWJmMlwvdjEuMCIsInB1Ymxpc2hlciI6ImNob3Jlb19wcm9kX2FwaW1fYWRtaW4iLCJ2ZXJzaW9uIjoidjEuMCIsInN1YnNjcmlwdGlvblRpZXIiOm51bGx9XSwiZXhwIjoxNzAyNjE4ODcwLCJ0b2tlbl90eXBlIjoiSW50ZXJuYWxLZXkiLCJpYXQiOjE3MDI2MTgyNzAsImp0aSI6IjdmM2Y3YTdjLWE1YzYtNGZhYy1hYTg5LTc0NzBlNzllMzdkZiJ9.DlAhI7sXlqr4vl-STFR91htW05VyPt4BwDNuG4JyHVtZh3iaRgnde1BWn2BdqqKURZ0CdjAC0jOo3MHOHj-G7Z2AtIzVCWOyh0pQR7f1w3OCRs4Ympr60FuqIDeZN_eW1U6gDAWFN0tUfu259cb_LzuRebBRWaPTObXSESu1qVyrVJzF2ZM6pp4pjFXghBtIwElOstfD-nrE8kKJQWM353BibWqeKkXXeGi-6KUtsnX9uhYH-1wEc7_ge1l9RndWUE1Oa3GUO8J1Yulvi0jYOZkVe2FlmEpSjLVYqXYkX0VhjRgl7qMTjm9oG8Fo8f_-SMtpmh0lTTV_PrvomLtRR6m4YjB6Yu7Mg0wnYoaBmZkb_QinMCIx67O68HhxmVAVNfLHlbh1NucPCPbgZjxT15resuBeWkJjdAKQ6LPwtsH-brxcJ697KLDUrb10U9k-PSBDfkpotPNyonYSJzBXBmF1NbtT3sR917-puB4a7cRF40MrBe6V9Hlyps8CnNKpDYcvmtGU-mlgcVXP6_9th4yMfY2ddTvetVeK-KMPCibRTS4oe5snPHQE2pTmb3mi0bHM4hy8RrBkvCpL6GDKunl008LOZnTO0j85OAeW_ubwe8RV93S0rEqA25y1TPqbzNROVZ40va-qqQ0ERsi_Xl5Bq3vf2GWl4tAm8nWbBi4";
+      "eyJraWQiOiJnYXRld2F5X2NlcnRpZmljYXRlX2FsaWFzIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI1ZmJiMzJiYS1mMDQxLTQyNGEtOTUzYy0wZGM0NjZmNzI5ZjVAY2FyYm9uLnN1cGVyIiwiYXVkIjoiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCIsImlzcyI6Imh0dHBzOlwvXC9zdHMuY2hvcmVvLmRldjo0NDNcL2FwaVwvYW1cL3B1Ymxpc2hlclwvdjJcL2FwaXNcL2ludGVybmFsLWtleSIsImtleXR5cGUiOiJTQU5EQk9YIiwic3Vic2NyaWJlZEFQSXMiOlt7InN1YnNjcmliZXJUZW5hbnREb21haW4iOm51bGwsIm5hbWUiOiJNYWluU2VydmljZSAtIE1haW5BUEkiLCJjb250ZXh0IjoiXC9jZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDhcL2NxeHFcL21haW5zZXJ2aWNlXC9tYWluYXBpLWJmMlwvdjEuMCIsInB1Ymxpc2hlciI6ImNob3Jlb19wcm9kX2FwaW1fYWRtaW4iLCJ2ZXJzaW9uIjoidjEuMCIsInN1YnNjcmlwdGlvblRpZXIiOm51bGx9XSwiZXhwIjoxNzAyOTIxODQ3LCJ0b2tlbl90eXBlIjoiSW50ZXJuYWxLZXkiLCJpYXQiOjE3MDI5MjEyNDcsImp0aSI6IjI3YmE4MWY5LTYyZGUtNGIwNi05ZGM1LWMwYzQyZmY3ZGNjNiJ9.BbcnI5SpXmIse86owov6CggbdCvNzQRkeZaxH34WRsUBGyJME1dez__LB9aMX3XJ4HjaedmPxit8GlTndP7c5fLI_S9awq_VJp8hfjO-UsnGhhRoqVzNVpGDX0qyOf6zR1ZRORZYazh0KNplHz4UJfG-mIpElJ01jeXCx8NTr9A1QyBGXBb_knw5zmUQV9D8A8h-775eN2UDMx4y5F-JY9ysWosSP7kKoGslYrWKoF6gAVV-V-d15gmiD3uBH05xPtKDppEV7BmrN2YEEplECeDJm48K4q-caWzN6mLkPj6aRsJvotk-SqRPENBczUglowe8Iaz6QVaWlMu9ImbWEse3k_I6Wu7YoBbvOQ9koC7_gLGpnzD5P4a5dDwPplM3rGE_i_zLXeurkZxlYWPCO5Klucpq0nMbc_DwoM51gEyXYc_FJZBO6JA2SuE76K6kcpXHoHtk3O306jSuTtpR2Fowe14pnU4VuVxPh_wKAWDkbGLCVciehv4YCKiCkkVGBJqoDVNmDi6u4V0DUe-XhqKM132YL1Iv7KkovMCyn3jgt85optcKMvXxOiDCR6S6L6vrrU4ei6E4NBdApR4JiVKwLPfQ2Zmi_WcHWXbsgTCZX1VnFXOgMKFGCIyR_HYJLVpL-bDAXgfrSpFfLKq3jyZeDdS_ePaSRI-VhG5xCYk";
     const formData = {
       _id: new Date().toISOString(),
       nic,
@@ -215,7 +198,9 @@ export const ApplyCert = () => {
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={styles.container}>
-        {isLoading && <LoadingIndicator />}
+        {isLoading && (
+          <LoadingIndicator loadingText="Submitting Grama Certificate Request!" />
+        )}
         <Text
           style={{
             fontSize: 24,
@@ -224,7 +209,7 @@ export const ApplyCert = () => {
             marginBottom: 20,
           }}
         >
-          DigiGrama
+          Digi Grama App
         </Text>
         <Text style={styles.label}>NIC</Text>
         <TextInput

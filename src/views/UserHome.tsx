@@ -54,6 +54,12 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     margin: 20,
   },
+  text: {
+    fontSize: 20,
+    textAlign: "center",
+    margin: 10,
+    fontWeight: "bold",
+  },
   // Add additional styles as necessary
 });
 type RootStackParamList = {
@@ -102,7 +108,9 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
   console.log("SS Value: ", accessToken);
   return (
     <View style={styles.container}>
-      {isLoggedIn && <Text>Hi {accessToken.given_name} </Text>}
+      {isLoggedIn && (
+        <Text style={styles.text}>Hi {accessToken.given_name} !</Text>
+      )}
       <Image
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={styles.image}
