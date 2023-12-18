@@ -1,5 +1,7 @@
-import React, { useContext, useState } from "react";
+// @ts-nocheck
+import React, { useContext, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { Picker } from "@react-native-picker/picker";
 
 import {
   Alert,
@@ -60,6 +62,31 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
   },
+  fieldName: {
+    alignItems: "flex-start",
+    fontSize: 14,
+    textAlign: "left",
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    textAlign: "left", // Align text to the left
+    alignSelf: "stretch", // Stretch to fill the width of the parent container
+    // Add any other styling you need for the label
+    marginLeft: 20,
+    borderRadius: 5,
+  },
+  picker: {
+    height: 50,
+    width: "100%",
+    width: "90%",
+    backgroundColor: "#fff",
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 5,
+    // You can add more styling as needed
+  },
   // Add any additional styling as necessary
 });
 
@@ -92,9 +119,19 @@ export const ApplyCert = () => {
   const [gsDivision, setGsDivision] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [accessToken, setAccessToken] = useState("");
 
   const { isLoggedIn } = useContext(UserContext);
+  useEffect(() => {
+    const fetchToken = async () => {
+      const token = await getValueFor("accessToken");
+      if (token) {
+        setAccessToken(token);
+      }
+    };
 
+    fetchToken();
+  }, []);
   async function getValueFor(key: string) {
     let result = await SecureStore.getItemAsync(key);
     if (result) {
@@ -189,20 +226,25 @@ export const ApplyCert = () => {
         >
           DigiGrama
         </Text>
+        <Text style={styles.label}>NIC</Text>
         <TextInput
           style={styles.input}
-          placeholder="NIC"
+          placeholder={accessToken.NIC || "NIC"}
           value={nic}
           onChangeText={setNic}
           autoCapitalize="none"
         />
+
+        <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={accessToken.email || "Email"}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
         />
+
+        <Text style={styles.label}>Address</Text>
         <TextInput
           style={styles.input}
           placeholder="Address"
@@ -210,6 +252,8 @@ export const ApplyCert = () => {
           onChangeText={setAddress}
           autoCapitalize="none"
         />
+
+        <Text style={styles.label}>GS Division</Text>
         <TextInput
           style={styles.input}
           placeholder="GS Division"
@@ -217,13 +261,20 @@ export const ApplyCert = () => {
           onChangeText={setGsDivision}
           autoCapitalize="none"
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Civil Status"
-          value={civilStatus}
-          onChangeText={setCivilStatus}
-          autoCapitalize="none"
-        />
+
+        <Text style={styles.label}>Civil Status</Text>
+        <Picker
+          selectedValue={civilStatus}
+          onValueChange={(itemValue, itemIndex) => setCivilStatus(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Single" value="single" />
+          <Picker.Item label="Married" value="married" />
+          <Picker.Item label="Divorced" value="divorced" />
+          <Picker.Item label="Widowed" value="widowed" />
+        </Picker>
+
+        <Text style={styles.label}>Present Occupation</Text>
         <TextInput
           style={styles.input}
           placeholder="Present Occupation"
@@ -231,6 +282,8 @@ export const ApplyCert = () => {
           onChangeText={setPresentOccupation}
           autoCapitalize="none"
         />
+
+        <Text style={styles.label}>Reason</Text>
         <TextInput
           style={styles.input}
           placeholder="Reason"
@@ -238,6 +291,7 @@ export const ApplyCert = () => {
           onChangeText={setReason}
           autoCapitalize="none"
         />
+
         <TouchableOpacity style={styles.buttonContainer} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Apply</Text>
         </TouchableOpacity>
