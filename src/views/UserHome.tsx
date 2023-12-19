@@ -97,24 +97,18 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
   const [idToken, setIdToken] = useState("");
 
   useEffect(() => {
-    const fetchAccessToken = async () => {
-      const token = await getValueFor("accessToken");
-      if (token) {
-        setAccessToken(token);
+    const fetchTokens = async () => {
+      const idTokenValue = await getValueFor("idToken");
+      const accessTokenValue = await getValueFor("accessToken");
+
+      if (idTokenValue && accessTokenValue) {
+        setIdToken(idTokenValue);
+        setAccessToken(accessTokenValue);
       }
     };
 
-    const fetchIdToken = async () => {
-      const token = await getValueFor("idToken");
-      if (token) {
-        setIdToken(token);
-        console.log("Id Token" + idToken);
-      }
-    };
-
-    fetchAccessToken();
-    fetchIdToken;
-  }, [idToken]);
+    fetchTokens();
+  }, []);
   console.log("In UserHome : Access Token Value: ", accessToken);
   console.log("In UserHome : Id Token Value: ", idToken);
   return (

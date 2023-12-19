@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
     alignItems: "center",
     paddingTop: 30,
+    paddingBottom: 30,
   },
   input: {
     width: "90%",
@@ -36,7 +37,6 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: "center",
     marginTop: 20,
-    marginBottom: 20,
   },
   buttonText: {
     color: "white",
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
 export const ApplyCert = () => {
   const [nic, setNic] = useState("");
   const [address, setAddress] = useState("");
-  const [civilStatus, setCivilStatus] = useState("");
+  const [civilStatus, setCivilStatus] = useState("Single");
   const [presentOccupation, setPresentOccupation] = useState("");
   const [reason, setReason] = useState("");
   const [gsDivision, setGsDivision] = useState("");

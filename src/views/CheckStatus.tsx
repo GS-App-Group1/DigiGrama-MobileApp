@@ -34,11 +34,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 5,
   },
+  labelRed: {
+    alignSelf: "flex-start",
+    marginLeft: "5%",
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  infoRed: {
+    width: "90%",
+    backgroundColor: "#ffcccc", // Light green background
+    color: "darkslategray", // Dark text color
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
     alignItems: "center",
     paddingTop: 30,
+    paddingBottom: 30,
   },
   label: {
     alignSelf: "flex-start",
@@ -193,7 +209,14 @@ const CheckStatus = () => {
       setIsLoading(false);
     }
   };
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return ""; // Return empty string if timestamp is null or undefined
 
+    const date = new Date(timestamp);
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    // This will format the date and time in a readable format based on the user's locale
+    // You can customize the format as needed
+  };
   return (
     <ScrollView style={{ flex: 1 }}>
       {isLoading && <LoadingIndicator loadingText="Loading" />}
@@ -209,11 +232,27 @@ const CheckStatus = () => {
         >
           Digi Grama App
         </Text>
+        <TouchableOpacity
+          style={[
+            styles.statusButton,
+            { backgroundColor: statusColor[status] },
+          ]}
+
+          // If the button should be interactive, you can add onPress here
+        >
+          <Text style={styles.statusButtonText}>
+            Status: {applicationData.status}
+          </Text>
+        </TouchableOpacity>
         <Text style={styles.labelGreen}>NIC</Text>
         <Text style={styles.infoGreen}>{nic}</Text>
+        <Text style={styles.label}>Request Time</Text>
+        <Text style={styles.info}>{formatTimestamp(requestTime)}</Text>
 
-        <Text style={styles.labelGreen}>Address</Text>
-        <Text style={styles.infoGreen}>{address}</Text>
+        <Text style={styles.labelRed}>GS Note</Text>
+        <Text style={styles.infoRed}>{gsNote}</Text>
+        <Text style={styles.label}>Address</Text>
+        <Text style={styles.info}>{address}</Text>
 
         <Text style={styles.label}>Civil Status</Text>
         <Text style={styles.info}>{civilStatus}</Text>
@@ -229,23 +268,6 @@ const CheckStatus = () => {
 
         <Text style={styles.label}>Email</Text>
         <Text style={styles.info}>{email}</Text>
-
-        <Text style={styles.label}>GS Note</Text>
-        <Text style={styles.info}>{gsNote}</Text>
-
-        <Text style={styles.label}>Request Time</Text>
-        <Text style={styles.info}>{requestTime}</Text>
-
-        <TouchableOpacity
-          style={[
-            styles.statusButton,
-            { backgroundColor: statusColor[status] },
-          ]}
-
-          // If the button should be interactive, you can add onPress here
-        >
-          <Text style={styles.statusButtonText}>{applicationData.status}</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );

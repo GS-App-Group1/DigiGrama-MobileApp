@@ -202,14 +202,14 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={homeScreenStyles.mainImage}
       />
-      {!isLoggedIn && (
+      {/* {!isLoggedIn && (
         <TouchableOpacity
           onPress={() => navigation.navigate("UserHome")}
           style={homeScreenStyles.button}
         >
           <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
         </TouchableOpacity>
-      )}
+      )} */}
       <View>
         {!isLoggedIn && (
           <TouchableOpacity
