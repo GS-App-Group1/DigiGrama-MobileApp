@@ -7,14 +7,12 @@ import { LoadingIndicator } from "../components/LoadingIndicator";
 
 import {
   Alert,
-  ActivityIndicator,
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Modal,
 } from "react-native";
 
 const styles = StyleSheet.create({
@@ -101,18 +99,25 @@ export const ApplyCert = () => {
   const [gsDivision, setGsDivision] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [idToken, setIdToken] = useState("");
   const [accessToken, setAccessToken] = useState("");
 
   const { isLoggedIn } = useContext(UserContext);
   useEffect(() => {
-    const fetchToken = async () => {
+    const fetchIdToken = async () => {
+      const token = await getValueFor("idToken");
+      if (token) {
+        setIdToken(token);
+      }
+    };
+    const fetchAccessToken = async () => {
       const token = await getValueFor("accessToken");
       if (token) {
         setAccessToken(token);
       }
     };
-
-    fetchToken();
+    fetchAccessToken();
+    fetchIdToken();
   }, []);
   async function getValueFor(key: string) {
     let result = await SecureStore.getItemAsync(key);
@@ -132,7 +137,7 @@ export const ApplyCert = () => {
     setIsLoading(true); // Start loading
     // const API_KEY = process.env.EXPO_PUBLIC_SUBMIT_REQUEST_API;
     const API_KEY =
-      "eyJraWQiOiJnYXRld2F5X2NlcnRpZmljYXRlX2FsaWFzIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI1ZmJiMzJiYS1mMDQxLTQyNGEtOTUzYy0wZGM0NjZmNzI5ZjVAY2FyYm9uLnN1cGVyIiwiYXVkIjoiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCIsImlzcyI6Imh0dHBzOlwvXC9zdHMuY2hvcmVvLmRldjo0NDNcL2FwaVwvYW1cL3B1Ymxpc2hlclwvdjJcL2FwaXNcL2ludGVybmFsLWtleSIsImtleXR5cGUiOiJTQU5EQk9YIiwic3Vic2NyaWJlZEFQSXMiOlt7InN1YnNjcmliZXJUZW5hbnREb21haW4iOm51bGwsIm5hbWUiOiJNYWluU2VydmljZSAtIE1haW5BUEkiLCJjb250ZXh0IjoiXC9jZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDhcL2NxeHFcL21haW5zZXJ2aWNlXC9tYWluYXBpLWJmMlwvdjEuMCIsInB1Ymxpc2hlciI6ImNob3Jlb19wcm9kX2FwaW1fYWRtaW4iLCJ2ZXJzaW9uIjoidjEuMCIsInN1YnNjcmlwdGlvblRpZXIiOm51bGx9XSwiZXhwIjoxNzAyOTIxODQ3LCJ0b2tlbl90eXBlIjoiSW50ZXJuYWxLZXkiLCJpYXQiOjE3MDI5MjEyNDcsImp0aSI6IjI3YmE4MWY5LTYyZGUtNGIwNi05ZGM1LWMwYzQyZmY3ZGNjNiJ9.BbcnI5SpXmIse86owov6CggbdCvNzQRkeZaxH34WRsUBGyJME1dez__LB9aMX3XJ4HjaedmPxit8GlTndP7c5fLI_S9awq_VJp8hfjO-UsnGhhRoqVzNVpGDX0qyOf6zR1ZRORZYazh0KNplHz4UJfG-mIpElJ01jeXCx8NTr9A1QyBGXBb_knw5zmUQV9D8A8h-775eN2UDMx4y5F-JY9ysWosSP7kKoGslYrWKoF6gAVV-V-d15gmiD3uBH05xPtKDppEV7BmrN2YEEplECeDJm48K4q-caWzN6mLkPj6aRsJvotk-SqRPENBczUglowe8Iaz6QVaWlMu9ImbWEse3k_I6Wu7YoBbvOQ9koC7_gLGpnzD5P4a5dDwPplM3rGE_i_zLXeurkZxlYWPCO5Klucpq0nMbc_DwoM51gEyXYc_FJZBO6JA2SuE76K6kcpXHoHtk3O306jSuTtpR2Fowe14pnU4VuVxPh_wKAWDkbGLCVciehv4YCKiCkkVGBJqoDVNmDi6u4V0DUe-XhqKM132YL1Iv7KkovMCyn3jgt85optcKMvXxOiDCR6S6L6vrrU4ei6E4NBdApR4JiVKwLPfQ2Zmi_WcHWXbsgTCZX1VnFXOgMKFGCIyR_HYJLVpL-bDAXgfrSpFfLKq3jyZeDdS_ePaSRI-VhG5xCYk";
+      "J4NXQiOiJZell6WTJNNVpXWTNZbVF4TTJZME16UTNOMk16WXpka05EWXlORE14TWpnd016RTNOamM1T1RSbE9UWTVaR1JsWkRJd01qVTBZakUzTURNeE9UQTBZZyIsImtpZCI6Ill6WXpZMk01WldZM1ltUXhNMlkwTXpRM04yTXpZemRrTkRZeU5ETXhNamd3TXpFM05qYzVPVFJsT1RZNVpHUmxaREl3TWpVMFlqRTNNRE14T1RBMFlnX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIyMGRjNWQ4MS1iOTJjLTRjZDItODBkNy1mODk4YWQzYjAyZjYiLCJhdXQiOiJBUFBMSUNBVElPTl9VU0VSIiwicm9sZXMiOiJldmVyeW9uZSIsImlzcyI6Imh0dHBzOlwvXC9hcGkuYXNnYXJkZW8uaW9cL3RcL2ludGVybnNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiRGlnaUdyYW1hMi1Vc2VycyJdLCJuaWMiOiIxMjMxMjMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJBbm9zaGFuSiIsImdpdmVuX25hbWUiOiJBbm9zaGFuIiwidXNlcmlkIjoiMjBkYzVkODEtYjkyYy00Y2QyLTgwZDctZjg5OGFkM2IwMmY2IiwiY2xpZW50X2lkIjoiWUdtdUpPckVjSTVmV1B6QWMwaXBfMFZCa0NBYSIsImF1ZCI6WyJZR211Sk9yRWNJNWZXUHpBYzBpcF8wVkJrQ0FhIiwiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCJdLCJuYmYiOjE3MDI5ODYyNTQsImF6cCI6IllHbXVKT3JFY0k1ZldQekFjMGlwXzBWQmtDQWEiLCJvcmdfaWQiOiJjZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDgiLCJzY29wZSI6ImFkZHJlc3MgZW1haWwgZ3JvdXBzIG9wZW5pZCBwcm9maWxlIHJvbGVzIiwiZ3JhbWFfZGl2aXNpb24iOiJLYW5keSIsImV4cCI6MTcwMjk4NzE1NCwib3JnX25hbWUiOiJpbnRlcm5zIiwiaWF0IjoxNzAyOTg2MjU0LCJmYW1pbHlfbmFtZSI6IkoiLCJqdGkiOiJkYzk4NzQ1MC03YWI2LTRjMzYtYWZjZi01MDY4Njk0MGYyY2YiLCJlbWFpbCI6ImFub3NoYW5Ad3NvMi5jb20iLCJ1c2VybmFtZSI6ImFub3NoYW5Ad3NvMi5jb20ifQ.Ouv_E3Eo0F502rCkD7GHVQtG_WZaKovaXChH2N8QFMaZEFPhJq3RThMYzPWLOGYz8S778Sh5Xz_kZHfqcRyS9IgTGlHp5-IePI-mKqiM3v3I1AhQ05XfuaVXRBeQAlGv2Fuw4HSXNvP5jFFaYij1QuumqM3LTRFE8mjOJfqWBT01JxyNTf6TpWhjZ9Zu3ApggJ9_a87gPVLGh-t8Vww8KK5vCnhWuU70N0_eeqQ2NM2eUMUfRHNWWpUI9PPtREnyUM5RBLLF1nDlOkEvOK7gxord0HAlu4fbCYpzarOb3J-i800MZf6_Q9wDLvSeilIj_FZQKWItQjdxkYJugwYilA";
     const formData = {
       _id: new Date().toISOString(),
       nic,
@@ -214,7 +219,7 @@ export const ApplyCert = () => {
         <Text style={styles.label}>NIC</Text>
         <TextInput
           style={styles.input}
-          placeholder={accessToken.NIC || "NIC"}
+          placeholder={idToken.NIC || "NIC"}
           value={nic}
           onChangeText={setNic}
           autoCapitalize="none"
@@ -223,7 +228,7 @@ export const ApplyCert = () => {
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
-          placeholder={accessToken.email || "Email"}
+          placeholder={idToken.email || "Email"}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"

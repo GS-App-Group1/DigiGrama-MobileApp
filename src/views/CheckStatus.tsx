@@ -16,6 +16,7 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
+import { TokenResponse } from "expo-auth-session";
 
 const styles = StyleSheet.create({
   container: {
@@ -79,6 +80,7 @@ const CheckStatus = () => {
   const [reason, setReason] = useState("");
   const [gsDivision, setGsDivision] = useState("");
   const [email, setEmail] = useState("");
+  const [idToken, setIdToken] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [gsNote, setGsNote] = useState("");
   const [requestTime, setRequestTime] = useState("");
@@ -100,76 +102,83 @@ const CheckStatus = () => {
   }
 
   useEffect(() => {
-    const fetchToken = async () => {
+    const fetchIdToken = async () => {
+      const token = await getValueFor("idToken");
+      if (token) {
+        setIdToken(token);
+      }
+    };
+    const fetchAccessToken = async () => {
       const token = await getValueFor("accessToken");
       if (token) {
         setAccessToken(token);
+        console.log("In CheckStatus AccessToken: " + accessToken);
       }
     };
-    fetchToken();
+
+    fetchAccessToken();
+    fetchIdToken();
     getData();
-  }, []);
+  }, [accessToken]);
 
   const getData = async () => {
     setIsLoading(true); // Start loading
     // const API_KEY = process.env.EXPO_PUBLIC_GET_REQUEST_API;
-    const API_KEY =
-      "eyJraWQiOiJnYXRld2F5X2NlcnRpZmljYXRlX2FsaWFzIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI1ZmJiMzJiYS1mMDQxLTQyNGEtOTUzYy0wZGM0NjZmNzI5ZjVAY2FyYm9uLnN1cGVyIiwiYXVkIjoiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCIsImlzcyI6Imh0dHBzOlwvXC9zdHMuY2hvcmVvLmRldjo0NDNcL2FwaVwvYW1cL3B1Ymxpc2hlclwvdjJcL2FwaXNcL2ludGVybmFsLWtleSIsImtleXR5cGUiOiJTQU5EQk9YIiwic3Vic2NyaWJlZEFQSXMiOlt7InN1YnNjcmliZXJUZW5hbnREb21haW4iOm51bGwsIm5hbWUiOiJNYWluU2VydmljZSAtIE1haW5BUEkiLCJjb250ZXh0IjoiXC9jZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDhcL2NxeHFcL21haW5zZXJ2aWNlXC9tYWluYXBpLWJmMlwvdjEuMCIsInB1Ymxpc2hlciI6ImNob3Jlb19wcm9kX2FwaW1fYWRtaW4iLCJ2ZXJzaW9uIjoidjEuMCIsInN1YnNjcmlwdGlvblRpZXIiOm51bGx9XSwiZXhwIjoxNzAyOTIxODQ3LCJ0b2tlbl90eXBlIjoiSW50ZXJuYWxLZXkiLCJpYXQiOjE3MDI5MjEyNDcsImp0aSI6IjI3YmE4MWY5LTYyZGUtNGIwNi05ZGM1LWMwYzQyZmY3ZGNjNiJ9.BbcnI5SpXmIse86owov6CggbdCvNzQRkeZaxH34WRsUBGyJME1dez__LB9aMX3XJ4HjaedmPxit8GlTndP7c5fLI_S9awq_VJp8hfjO-UsnGhhRoqVzNVpGDX0qyOf6zR1ZRORZYazh0KNplHz4UJfG-mIpElJ01jeXCx8NTr9A1QyBGXBb_knw5zmUQV9D8A8h-775eN2UDMx4y5F-JY9ysWosSP7kKoGslYrWKoF6gAVV-V-d15gmiD3uBH05xPtKDppEV7BmrN2YEEplECeDJm48K4q-caWzN6mLkPj6aRsJvotk-SqRPENBczUglowe8Iaz6QVaWlMu9ImbWEse3k_I6Wu7YoBbvOQ9koC7_gLGpnzD5P4a5dDwPplM3rGE_i_zLXeurkZxlYWPCO5Klucpq0nMbc_DwoM51gEyXYc_FJZBO6JA2SuE76K6kcpXHoHtk3O306jSuTtpR2Fowe14pnU4VuVxPh_wKAWDkbGLCVciehv4YCKiCkkVGBJqoDVNmDi6u4V0DUe-XhqKM132YL1Iv7KkovMCyn3jgt85optcKMvXxOiDCR6S6L6vrrU4ei6E4NBdApR4JiVKwLPfQ2Zmi_WcHWXbsgTCZX1VnFXOgMKFGCIyR_HYJLVpL-bDAXgfrSpFfLKq3jyZeDdS_ePaSRI-VhG5xCYk";
-    console.log("API KEY " + API_KEY);
+    // const API_KEY =
+    //   "eyJ4NXQiOiJZell6WTJNNVpXWTNZbVF4TTJZME16UTNOMk16WXpka05EWXlORE14TWpnd016RTNOamM1T1RSbE9UWTVaR1JsWkRJd01qVTBZakUzTURNeE9UQTBZZyIsImtpZCI6Ill6WXpZMk01WldZM1ltUXhNMlkwTXpRM04yTXpZemRrTkRZeU5ETXhNamd3TXpFM05qYzVPVFJsT1RZNVpHUmxaREl3TWpVMFlqRTNNRE14T1RBMFlnX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI0YTM2MWI4Yi1lM2JiLTQ0ZDEtYmVhNC1kZmFjNDk0NGZmYzMiLCJhdXQiOiJBUFBMSUNBVElPTiIsImF1ZCI6WyJtaXV2Y3haUWhGMjJZanJuZ2JLUmJqWlZwVWNhIiwiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCJdLCJuYmYiOjE3MDI5NjE2NzksImF6cCI6Im1pdXZjeFpRaEYyMllqcm5nYktSYmpaVnBVY2EiLCJvcmdfaWQiOiJjZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDgiLCJpc3MiOiJodHRwczpcL1wvYXBpLmFzZ2FyZGVvLmlvXC90XC9pbnRlcm5zXC9vYXV0aDJcL3Rva2VuIiwiZXhwIjoxNzAyOTYyNTc5LCJvcmdfbmFtZSI6ImludGVybnMiLCJpYXQiOjE3MDI5NjE2NzksImp0aSI6ImNlNDVkYWE3LTliNzAtNGY3My1hOTM2LTAwY2ZiN2E5MWNhMyIsImNsaWVudF9pZCI6Im1pdXZjeFpRaEYyMllqcm5nYktSYmpaVnBVY2EifQ.KMPnypn024tKJ0WVDdCSsMeJF9b1I56aMhTdeF9Oou3gLWzy8AUHBnPSB46Zz6AHrHOwFDIaWPvhBJojmkmYq3WhuMHLtj1_V1kdjkikkMcHMSDyloNZg-YDJ8pxSImBAoREsK4jb3w_NlrJlgi0PjFU5Ius12x6pgS1B33LkgvWScGe3B2TgR5HH7mMzQjVnFqV63kCvNwp4RqrF0t4xo0owFrnauVyXn6-cPpXgyAm0qtYP-SAxIjfkCmz85M30RmqjKeNGKsYGodir24QQndHVOItoqzjdDa25QAFAr04j6b7XngABl7PUXc1s3MuDKFJl5f7pzTMOgDf__nlGg";
+    // console.log("API KEY " + API_KEY);
     const testData = {
       nic: "200005703120",
       email: "themirada@wso2.com",
     };
-
     try {
       const url = new URL(
-        "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-dev.e1-us-east-azure.choreoapis.dev/cqxq/mainservice/mainapi-bf2/v1.0/getUserRequestForNIC?"
+        "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-prod.e1-us-east-azure.choreoapis.dev/hbld/mainservice-tcf/mainapi-bf2/v1/getUserRequestForNIC"
       );
-      url.searchParams.append("nic", accessToken.NIC);
-      url.searchParams.append("email", accessToken.email);
-      // console.log("NIC log: " + accessToken.email);
-      // url.searchParams.append("nic", testData.nic);
-      // url.searchParams.append("email", testData.email);
+      url.searchParams.append("nic", idToken.nic);
+      url.searchParams.append("email", idToken.email);
+
+      console.log("URL: " + url.toString()); // Log the full URL
+      console.log("Authorization Token: " + accessToken); // Log the token
 
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          "API-Key": API_KEY, // Replace with your actual API Key
+          accept: "application/json",
+          Authorization: "Bearer " + accessToken,
         },
       });
-      console.log("The response" + response.status);
-      console.log("Response boyd" + response.json);
+
+      console.log("Response Status: " + response.status); // Log the response status
+
       if (response.ok) {
-        try {
-          const responseBody = await response.json();
-          const jsonResponse = responseBody[0];
-          console.log("The response", response.status);
-          console.log("Response body", responseBody[0]);
-          // Process jsonResponse
-          setAddress(jsonResponse.address);
-          setCivilStatus(jsonResponse.civilStatus);
-          setEmail(jsonResponse.email);
-          setGsDivision(jsonResponse.gsDivision);
-          setGsNote(jsonResponse.gsNote);
-          setNic(jsonResponse.nic);
-          setPresentOccupation(jsonResponse.presentOccupation);
-          setReason(jsonResponse.reason);
-          setRequestTime(jsonResponse.requestTime);
-          setStatus(jsonResponse.status.toLowerCase());
-        } catch (error) {
-          Alert.alert("Error", "Something went wrong.");
-          console.error("Error parsing JSON:", error);
+        const responseBody = await response.json();
+        console.log("Response Body: ", responseBody); // Log the parsed JSON response
+        if (responseBody.length == 0) {
+          Alert.alert("No application found for this NIC");
+          return;
         }
+        const jsonResponse = responseBody[0];
+
+        console.log("Json response", jsonResponse);
+        // Process jsonResponse
+        setAddress(jsonResponse.address);
+        setCivilStatus(jsonResponse.civilStatus);
+        setEmail(jsonResponse.email);
+        setGsDivision(jsonResponse.gsDivision);
+        setGsNote(jsonResponse.gsNote);
+        setNic(jsonResponse.nic);
+        setPresentOccupation(jsonResponse.presentOccupation);
+        setReason(jsonResponse.reason);
+        setRequestTime(jsonResponse.requestTime);
+        setStatus(jsonResponse.status.toLowerCase());
       } else {
-        Alert.alert("Error", "Something went wrong.");
-        console.error("Fetch error: " + error.message);
+        console.error("Fetch error: " + response.statusText);
       }
     } catch (error) {
-      // Handle network errors
-      console.log(error);
+      console.error("Network error:", error);
     } finally {
-      setIsLoading(false); // End loading
+      setIsLoading(false);
     }
   };
   return (

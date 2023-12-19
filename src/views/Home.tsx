@@ -10,8 +10,6 @@ import {
   Button,
   ScrollView,
 } from "react-native";
-import * as AppAuth from "react-native-app-auth";
-import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
 import "core-js/stable/atob";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
@@ -44,11 +42,12 @@ WebBrowser.maybeCompleteAuthSession();
 
 const redirectUri = AuthSession.makeRedirectUri();
 
-const CLIENT_ID = "JLo7FfeUqjXIZhy7JrtfqKCzIfka";
+// const CLIENT_ID = "JLo7FfeUqjXIZhy7JrtfqKCzIfka";
+const CLIENT_ID = "4wygss8FAZVLEY3S2MZhM1QDfB8a";
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const discovery = AuthSession.useAutoDiscovery(
-    "https://api.asgardeo.io/t/interntest/oauth2/token"
+    "https://api.asgardeo.io/t/interns/oauth2/token"
   );
   const [tokenResponse, setTokenResponse] = useState({});
   const [decodedIdToken, setDecodedIdToken] = useState({});
@@ -61,7 +60,17 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       redirectUri,
       clientId: CLIENT_ID,
       responseType: "code",
-      scopes: ["openid", "profile", "email", "address", "phone"],
+      // scopes: ["openid", "profile", "email", "address", "phone"],
+      scopes: [
+        "openid",
+        "profile",
+        "email",
+        "address",
+        "groups",
+        "roles",
+        "urn:interns:mainservicetcfmainapi:User",
+        "urn:interns:mainservicetcfmainapi:Admin",
+      ],
     },
     discovery
   );
@@ -70,11 +79,62 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const signOut = async () => {
+    const data = {
+      token: tokenResponse.access_token,
+      token_type_hint: "access_token",
+      client_id: CLIENT_ID,
+    };
+    const refresh = {
+      token: tokenResponse.refresh_token,
+      token_type_hint: "refresh_token",
+      client_id: CLIENT_ID,
+    };
+    // console.log("data" + JSON.stringify(data));
+    console.log("This is the data: " + data.token);
+    try {
+      const response = await fetch(
+        "https://api.asgardeo.io/t/interns/oauth2/revoke",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `token=${data.token}&token_type_hint=${data.token_type_hint}&client_id=${data.client_id}`,
+        }
+      );
+      const response2 = await fetch(
+        "https://api.asgardeo.io/t/interns/oauth2/revoke",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `token=${refresh.token}&token_type_hint=${refresh.token_type_hint}&client_id=${refresh.client_id}`,
+        }
+      );
+      if (!response.status == 200) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // const responseData = await response.json();
+      // console.log(responseData);
+
+      setIsLoggedIn(false);
+      setTokenResponse({});
+      setDecodedIdToken({});
+      save("idToken", "");
+      save("accessToken", "");
+    } catch (err) {
+      console.error("Sign out error:", err);
+    }
+  };
+
   const getAccessToken = () => {
     console.log("result logged:" + JSON.stringify(result));
     setIsLoading(true);
     if (result?.params?.code) {
-      fetch("https://api.asgardeo.io/t/interntest/oauth2/token", {
+      fetch("https://api.asgardeo.io/t/interns/oauth2/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -89,8 +149,10 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           const decodedToken = jwtDecode(data.id_token);
           setTokenResponse(data);
           setDecodedIdToken(decodedToken);
+          console.log("access Token" + JSON.stringify(data.access_token));
+          save("accessToken", JSON.stringify(data.access_token));
           console.log("decodedIdToken logged:" + JSON.stringify(decodedToken));
-          save("accessToken", JSON.stringify(decodedToken));
+          save("idToken", JSON.stringify(decodedToken));
           setIsLoggedIn(true);
         })
         .catch((err) => {
@@ -167,15 +229,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         )}
         {isLoggedIn && (
-          <TouchableOpacity
-            style={homeScreenStyles.button}
-            onPress={() => {
-              save("accessToken", "");
-              setTokenResponse("");
-              setDecodedIdToken("");
-              setIsLoggedIn(false);
-            }}
-          >
+          <TouchableOpacity style={homeScreenStyles.button} onPress={signOut}>
             <Text style={homeScreenStyles.buttonText}>Logout</Text>
           </TouchableOpacity>
         )}

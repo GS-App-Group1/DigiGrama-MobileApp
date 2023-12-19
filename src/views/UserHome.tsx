@@ -105,7 +105,7 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
 
     fetchToken();
   }, []);
-  console.log("SS Value: ", accessToken);
+  console.log("In UserHome : Access Token Value: ", accessToken);
   return (
     <View style={styles.container}>
       {isLoggedIn && (
