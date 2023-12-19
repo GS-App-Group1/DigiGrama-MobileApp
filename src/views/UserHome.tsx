@@ -94,23 +94,32 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
   };
 
   const [accessToken, setAccessToken] = useState("");
+  const [idToken, setIdToken] = useState("");
 
   useEffect(() => {
-    const fetchToken = async () => {
+    const fetchAccessToken = async () => {
       const token = await getValueFor("accessToken");
       if (token) {
         setAccessToken(token);
       }
     };
 
-    fetchToken();
-  }, []);
+    const fetchIdToken = async () => {
+      const token = await getValueFor("idToken");
+      if (token) {
+        setIdToken(token);
+        console.log("Id Token" + idToken);
+      }
+    };
+
+    fetchAccessToken();
+    fetchIdToken;
+  }, [idToken]);
   console.log("In UserHome : Access Token Value: ", accessToken);
+  console.log("In UserHome : Id Token Value: ", idToken);
   return (
     <View style={styles.container}>
-      {isLoggedIn && (
-        <Text style={styles.text}>Hi {accessToken.given_name} !</Text>
-      )}
+      {isLoggedIn && <Text style={styles.text}>Hi {idToken.given_name} !</Text>}
       <Image
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={styles.image}

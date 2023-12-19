@@ -118,7 +118,7 @@ export const ApplyCert = () => {
     };
     fetchAccessToken();
     fetchIdToken();
-  }, []);
+  }, [accessToken]);
   async function getValueFor(key: string) {
     let result = await SecureStore.getItemAsync(key);
     if (result) {
@@ -140,8 +140,8 @@ export const ApplyCert = () => {
       "J4NXQiOiJZell6WTJNNVpXWTNZbVF4TTJZME16UTNOMk16WXpka05EWXlORE14TWpnd016RTNOamM1T1RSbE9UWTVaR1JsWkRJd01qVTBZakUzTURNeE9UQTBZZyIsImtpZCI6Ill6WXpZMk01WldZM1ltUXhNMlkwTXpRM04yTXpZemRrTkRZeU5ETXhNamd3TXpFM05qYzVPVFJsT1RZNVpHUmxaREl3TWpVMFlqRTNNRE14T1RBMFlnX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIyMGRjNWQ4MS1iOTJjLTRjZDItODBkNy1mODk4YWQzYjAyZjYiLCJhdXQiOiJBUFBMSUNBVElPTl9VU0VSIiwicm9sZXMiOiJldmVyeW9uZSIsImlzcyI6Imh0dHBzOlwvXC9hcGkuYXNnYXJkZW8uaW9cL3RcL2ludGVybnNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiRGlnaUdyYW1hMi1Vc2VycyJdLCJuaWMiOiIxMjMxMjMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJBbm9zaGFuSiIsImdpdmVuX25hbWUiOiJBbm9zaGFuIiwidXNlcmlkIjoiMjBkYzVkODEtYjkyYy00Y2QyLTgwZDctZjg5OGFkM2IwMmY2IiwiY2xpZW50X2lkIjoiWUdtdUpPckVjSTVmV1B6QWMwaXBfMFZCa0NBYSIsImF1ZCI6WyJZR211Sk9yRWNJNWZXUHpBYzBpcF8wVkJrQ0FhIiwiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCJdLCJuYmYiOjE3MDI5ODYyNTQsImF6cCI6IllHbXVKT3JFY0k1ZldQekFjMGlwXzBWQmtDQWEiLCJvcmdfaWQiOiJjZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDgiLCJzY29wZSI6ImFkZHJlc3MgZW1haWwgZ3JvdXBzIG9wZW5pZCBwcm9maWxlIHJvbGVzIiwiZ3JhbWFfZGl2aXNpb24iOiJLYW5keSIsImV4cCI6MTcwMjk4NzE1NCwib3JnX25hbWUiOiJpbnRlcm5zIiwiaWF0IjoxNzAyOTg2MjU0LCJmYW1pbHlfbmFtZSI6IkoiLCJqdGkiOiJkYzk4NzQ1MC03YWI2LTRjMzYtYWZjZi01MDY4Njk0MGYyY2YiLCJlbWFpbCI6ImFub3NoYW5Ad3NvMi5jb20iLCJ1c2VybmFtZSI6ImFub3NoYW5Ad3NvMi5jb20ifQ.Ouv_E3Eo0F502rCkD7GHVQtG_WZaKovaXChH2N8QFMaZEFPhJq3RThMYzPWLOGYz8S778Sh5Xz_kZHfqcRyS9IgTGlHp5-IePI-mKqiM3v3I1AhQ05XfuaVXRBeQAlGv2Fuw4HSXNvP5jFFaYij1QuumqM3LTRFE8mjOJfqWBT01JxyNTf6TpWhjZ9Zu3ApggJ9_a87gPVLGh-t8Vww8KK5vCnhWuU70N0_eeqQ2NM2eUMUfRHNWWpUI9PPtREnyUM5RBLLF1nDlOkEvOK7gxord0HAlu4fbCYpzarOb3J-i800MZf6_Q9wDLvSeilIj_FZQKWItQjdxkYJugwYilA";
     const formData = {
       _id: new Date().toISOString(),
-      nic,
-      email,
+      nic: idToken.nic,
+      email: idToken.email,
       address,
       civilStatus,
       presentOccupation,
@@ -169,12 +169,12 @@ export const ApplyCert = () => {
     console.log(JSON.stringify(testData));
     try {
       const response = await fetch(
-        "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-dev.e1-us-east-azure.choreoapis.dev/cqxq/mainservice/mainapi-bf2/v1.0/userRequest",
+        "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-prod.e1-us-east-azure.choreoapis.dev/hbld/mainservice-tcf/mainapi-bf2/v1/userRequest",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "API-Key": API_KEY, // Replace with your actual API Key
+            Authorization: "Bearer " + accessToken, // Replace with your actual API Key
           },
           body: JSON.stringify(formData),
         }
@@ -218,20 +218,28 @@ export const ApplyCert = () => {
         </Text>
         <Text style={styles.label}>NIC</Text>
         <TextInput
-          style={styles.input}
-          placeholder={idToken.NIC || "NIC"}
-          value={nic}
+          style={[
+            styles.input,
+            { backgroundColor: "#e0f2f1", color: "darkslategray" },
+          ]}
+          placeholder={idToken.nic || "NIC"}
+          value={idToken.nic}
           onChangeText={setNic}
           autoCapitalize="none"
+          editable={false} // This makes the TextInput not editable
         />
 
         <Text style={styles.label}>Email</Text>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            { backgroundColor: "#e0f2f1", color: "darkslategray" },
+          ]}
           placeholder={idToken.email || "Email"}
-          value={email}
+          value={idToken.email}
           onChangeText={setEmail}
           autoCapitalize="none"
+          editable={false} // This makes the TextInput not editable
         />
 
         <Text style={styles.label}>Address</Text>

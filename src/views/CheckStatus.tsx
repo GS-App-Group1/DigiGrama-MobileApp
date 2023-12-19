@@ -19,6 +19,21 @@ import {
 import { TokenResponse } from "expo-auth-session";
 
 const styles = StyleSheet.create({
+  labelGreen: {
+    alignSelf: "flex-start",
+    marginLeft: "5%",
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  infoGreen: {
+    width: "90%",
+    backgroundColor: "#e0f2f1", // Light green background
+    color: "darkslategray", // Dark text color
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -87,50 +102,47 @@ const CheckStatus = () => {
   const [status, setStatus] = useState("pending");
   const { isLoggedIn } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
+
   async function getValueFor(key: string) {
-    let result = await SecureStore.getItemAsync(key);
-    if (result) {
-      try {
-        return JSON.parse(result); // Parsing the JSON string
-      } catch (e) {
-        console.error("Error parsing JSON: ", e);
-        return null; // Return null or an appropriate default value
+    try {
+      let result = await SecureStore.getItemAsync(key);
+      if (result) {
+        console.log(key + " retrieved: ", result); // Debug log
+        return JSON.parse(result);
+      } else {
+        console.log(key + " not found in SecureStore");
+        return null;
       }
-    } else {
-      return null; // Return null or an appropriate default value
+    } catch (e) {
+      console.error("Error in getValueFor - " + key + ": ", e);
+      return null;
     }
   }
 
   useEffect(() => {
-    const fetchIdToken = async () => {
-      const token = await getValueFor("idToken");
-      if (token) {
-        setIdToken(token);
-      }
-    };
-    const fetchAccessToken = async () => {
-      const token = await getValueFor("accessToken");
-      if (token) {
-        setAccessToken(token);
-        console.log("In CheckStatus AccessToken: " + accessToken);
+    const fetchTokens = async () => {
+      const idTokenValue = await getValueFor("idToken");
+      const accessTokenValue = await getValueFor("accessToken");
+
+      if (idTokenValue && accessTokenValue) {
+        setIdToken(idTokenValue);
+        setAccessToken(accessTokenValue);
+        getData(idTokenValue, accessTokenValue); // Call getData with the tokens
       }
     };
 
-    fetchAccessToken();
-    fetchIdToken();
-    getData();
-  }, [accessToken]);
+    fetchTokens();
+  }, []);
 
-  const getData = async () => {
+  const getData = async (idToken, accessToken) => {
     setIsLoading(true); // Start loading
     // const API_KEY = process.env.EXPO_PUBLIC_GET_REQUEST_API;
-    // const API_KEY =
-    //   "eyJ4NXQiOiJZell6WTJNNVpXWTNZbVF4TTJZME16UTNOMk16WXpka05EWXlORE14TWpnd016RTNOamM1T1RSbE9UWTVaR1JsWkRJd01qVTBZakUzTURNeE9UQTBZZyIsImtpZCI6Ill6WXpZMk01WldZM1ltUXhNMlkwTXpRM04yTXpZemRrTkRZeU5ETXhNamd3TXpFM05qYzVPVFJsT1RZNVpHUmxaREl3TWpVMFlqRTNNRE14T1RBMFlnX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI0YTM2MWI4Yi1lM2JiLTQ0ZDEtYmVhNC1kZmFjNDk0NGZmYzMiLCJhdXQiOiJBUFBMSUNBVElPTiIsImF1ZCI6WyJtaXV2Y3haUWhGMjJZanJuZ2JLUmJqWlZwVWNhIiwiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCJdLCJuYmYiOjE3MDI5NjE2NzksImF6cCI6Im1pdXZjeFpRaEYyMllqcm5nYktSYmpaVnBVY2EiLCJvcmdfaWQiOiJjZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDgiLCJpc3MiOiJodHRwczpcL1wvYXBpLmFzZ2FyZGVvLmlvXC90XC9pbnRlcm5zXC9vYXV0aDJcL3Rva2VuIiwiZXhwIjoxNzAyOTYyNTc5LCJvcmdfbmFtZSI6ImludGVybnMiLCJpYXQiOjE3MDI5NjE2NzksImp0aSI6ImNlNDVkYWE3LTliNzAtNGY3My1hOTM2LTAwY2ZiN2E5MWNhMyIsImNsaWVudF9pZCI6Im1pdXZjeFpRaEYyMllqcm5nYktSYmpaVnBVY2EifQ.KMPnypn024tKJ0WVDdCSsMeJF9b1I56aMhTdeF9Oou3gLWzy8AUHBnPSB46Zz6AHrHOwFDIaWPvhBJojmkmYq3WhuMHLtj1_V1kdjkikkMcHMSDyloNZg-YDJ8pxSImBAoREsK4jb3w_NlrJlgi0PjFU5Ius12x6pgS1B33LkgvWScGe3B2TgR5HH7mMzQjVnFqV63kCvNwp4RqrF0t4xo0owFrnauVyXn6-cPpXgyAm0qtYP-SAxIjfkCmz85M30RmqjKeNGKsYGodir24QQndHVOItoqzjdDa25QAFAr04j6b7XngABl7PUXc1s3MuDKFJl5f7pzTMOgDf__nlGg";
-    // console.log("API KEY " + API_KEY);
+
     const testData = {
       nic: "200005703120",
       email: "themirada@wso2.com",
     };
+
     try {
       const url = new URL(
         "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-prod.e1-us-east-azure.choreoapis.dev/hbld/mainservice-tcf/mainapi-bf2/v1/getUserRequestForNIC"
@@ -181,6 +193,7 @@ const CheckStatus = () => {
       setIsLoading(false);
     }
   };
+
   return (
     <ScrollView style={{ flex: 1 }}>
       {isLoading && <LoadingIndicator loadingText="Loading" />}
@@ -196,11 +209,11 @@ const CheckStatus = () => {
         >
           Digi Grama App
         </Text>
-        <Text style={styles.label}>NIC</Text>
-        <Text style={styles.info}>{nic}</Text>
+        <Text style={styles.labelGreen}>NIC</Text>
+        <Text style={styles.infoGreen}>{nic}</Text>
 
-        <Text style={styles.label}>Address</Text>
-        <Text style={styles.info}>{address}</Text>
+        <Text style={styles.labelGreen}>Address</Text>
+        <Text style={styles.infoGreen}>{address}</Text>
 
         <Text style={styles.label}>Civil Status</Text>
         <Text style={styles.info}>{civilStatus}</Text>
