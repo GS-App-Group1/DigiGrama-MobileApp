@@ -44,6 +44,7 @@ const redirectUri = AuthSession.makeRedirectUri();
 
 // const CLIENT_ID = "JLo7FfeUqjXIZhy7JrtfqKCzIfka";
 const CLIENT_ID = "4wygss8FAZVLEY3S2MZhM1QDfB8a";
+const CLIENT_ID_BASE64 = "NHd5Z3NzOEZBWlZMRVkzUzJNWmhNMVFEZkI4YQ==";
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const discovery = AuthSession.useAutoDiscovery(
@@ -75,59 +76,43 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     discovery
   );
 
+  console.log(redirectUri);
+
   const { setIsLoggedIn } = useContext(UserContext);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const signOut = async () => {
-    const data = {
-      token: tokenResponse.access_token,
-      token_type_hint: "access_token",
-      client_id: CLIENT_ID,
-    };
-    const refresh = {
-      token: tokenResponse.refresh_token,
-      token_type_hint: "refresh_token",
-      client_id: CLIENT_ID,
-    };
-    // console.log("data" + JSON.stringify(data));
-    console.log("This is the data: " + data.token);
-    try {
-      const response = await fetch(
-        "https://api.asgardeo.io/t/interns/oauth2/revoke",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: `token=${data.token}&token_type_hint=${data.token_type_hint}&client_id=${data.client_id}`,
-        }
-      );
-      const response2 = await fetch(
-        "https://api.asgardeo.io/t/interns/oauth2/revoke",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: `token=${refresh.token}&token_type_hint=${refresh.token_type_hint}&client_id=${refresh.client_id}`,
-        }
-      );
-      if (!response.status == 200) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+  const logout = async () => {
+    setIsLoading(true);
+    const logoutEndpoint = `https://api.asgardeo.io/t/interns/oidc/logout`;
 
-      // const responseData = await response.json();
-      // console.log(responseData);
+    // Constructing the body of the logout request
+    const details = {
+      client_id: CLIENT_ID,
+      post_logout_redirect_uri: redirectUri,
+      state: "logout",
+    };
 
-      setIsLoggedIn(false);
-      setTokenResponse({});
-      setDecodedIdToken({});
-      save("idToken", "");
-      save("accessToken", "");
-    } catch (err) {
-      console.error("Sign out error:", err);
-    }
+    // Encoding the parameters in x-www-form-urlencoded format
+    const formBody = Object.keys(details)
+      .map(
+        (key) =>
+          encodeURIComponent(key) + "=" + encodeURIComponent(details[key])
+      )
+      .join("&");
+
+    // Using WebBrowser to open the logout URL with the required parameters
+    let result = await WebBrowser.openBrowserAsync(
+      logoutEndpoint + "?" + formBody
+    );
+    console.log(result);
+    // Handle the result here. You may want to check if the logout was successful and then perform further actions in your app
+    setIsLoggedIn(false);
+    setTokenResponse({});
+    setDecodedIdToken({});
+    save("idToken", "");
+    save("accessToken", "");
+    setIsLoading(false);
   };
 
   const getAccessToken = () => {
@@ -151,6 +136,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           setDecodedIdToken(decodedToken);
           console.log("access Token" + JSON.stringify(data.access_token));
           save("accessToken", JSON.stringify(data.access_token));
+          console.log("refresh Token" + JSON.stringify(data.refresh_token));
           console.log("decodedIdToken logged:" + JSON.stringify(decodedToken));
           save("idToken", JSON.stringify(decodedToken));
           setIsLoggedIn(true);
@@ -229,7 +215,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         )}
         {isLoggedIn && (
-          <TouchableOpacity style={homeScreenStyles.button} onPress={signOut}>
+          <TouchableOpacity style={homeScreenStyles.button} onPress={logout}>
             <Text style={homeScreenStyles.buttonText}>Logout</Text>
           </TouchableOpacity>
         )}
