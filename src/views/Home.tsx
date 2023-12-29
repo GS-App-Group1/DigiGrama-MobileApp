@@ -1,14 +1,20 @@
-import React, { useState } from "react";
+// @ts-nocheck
+import React, { useState, useEffect } from "react";
 import { useContext } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { authorize } from "react-native-app-auth";
-import * as AppAuth from "react-native-app-auth";
-import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
-
-// import { config } from "../config";
+import { View, Text, TouchableOpacity, Image, ScrollView } from "react-native";
+import "core-js/stable/atob";
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
+import { jwtDecode } from "jwt-decode";
 import { UserContext } from "../contexts/UserContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as SecureStore from "expo-secure-store";
+import { LoadingIndicator } from "../components/LoadingIndicator";
+import homeScreenStyles from "../styles/HomeStyles";
 
+async function save(key, value) {
+  await SecureStore.setItemAsync(key, value);
+}
 type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
@@ -24,151 +30,188 @@ type Props = {
   navigation: HomeScreenNavigationProp;
 };
 
-//test
+WebBrowser.maybeCompleteAuthSession();
 
-const handleAuthorize = async () => {
-  try {
-    const result = await authorize({
-      issuer: 'https://api.asgardeo.io/t/interntest/oauth2/token"',
-      clientId: "JLo7FfeUqjXIZhy7JrtfqKCzIfka",
-      redirectUrl: "myapp://oauth2",
-      scopes: ["openid", "profile"],
-      serviceConfiguration: {
-        authorizationEndpoint:
-          "https://api.asgardeo.io/t/interntest/oauth2/authorize",
-        tokenEndpoint: "https://api.asgardeo.io/t/interntest/oauth2/token",
-      },
-    });
-    console.log(result);
-  } catch (error) {
-    console.error(error);
-  }
-};
+// const redirectUri = AuthSession.makeRedirectUri();
+const redirectUri = AuthSession.makeRedirectUri({
+  scheme: "myapp",
+  path: "auth",
+});
+
+const CLIENT_ID = "4wygss8FAZVLEY3S2MZhM1QDfB8a";
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  // export const HomeScreen = () => {
-  const config = {
-    issuer: "https://api.asgardeo.io/t/interntest/oauth2/token",
-    clientId: "JLo7FfeUqjXIZhy7JrtfqKCzIfka",
-    redirectUrl: "myapp://oauth2",
-    scopes: ["openid", "profile"],
-    postLogoutRedirectUrl: "myapp.auth://example",
-  };
+  const discovery = AuthSession.useAutoDiscovery(
+    "https://api.asgardeo.io/t/interns/oauth2/token"
+  );
+  const [tokenResponse, setTokenResponse] = useState({});
+  const [decodedIdToken, setDecodedIdToken] = useState({});
+  const { isLoggedIn } = useContext(UserContext);
+
+  const [request, result, promptAsync] = AuthSession.useAuthRequest(
+    {
+      redirectUri,
+      clientId: CLIENT_ID,
+      responseType: "code",
+      scopes: [
+        "openid",
+        "profile",
+        "email",
+        "address",
+        "groups",
+        "roles",
+        "urn:interns:mainservicetcfmainapi:User",
+        "urn:interns:mainservicetcfmainapi:Admin",
+        "download_nic",
+        "upload_nic",
+      ],
+    },
+    discovery
+  );
+
+  console.log(redirectUri);
 
   const { setIsLoggedIn } = useContext(UserContext);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const signIn = async () => {
-    try {
-      console.log("setIsLoadings staus:" + isLoading);
-      setIsLoading(true);
-      console.log("setIsLoadings staus:" + isLoading);
-      const result = await AppAuth.authorize(config);
-      console.log("result logged:" + result);
+  const logout = async () => {
+    setIsLoading(true);
+    const logoutEndpoint = `https://api.asgardeo.io/t/interns/oidc/logout`;
 
-      RNSecureStorage.set("authorizeResponse", JSON.stringify(result), {
-        accessible: ACCESSIBLE.WHEN_UNLOCKED,
-      }).then(
-        (_res) => {
-          setIsLoggedIn(true);
-        },
-        (err) => {
-          throw err;
-        }
-      );
-    } catch (error) {
-      console.log(error);
-      setIsLoggedIn(false);
-    } finally {
-      setIsLoading(false);
-    }
+    // Constructing the body of the logout request
+    const details = {
+      client_id: CLIENT_ID,
+      post_logout_redirect_uri: redirectUri,
+      state: "logout",
+    };
+
+    // Encoding the parameters in x-www-form-urlencoded format
+    const formBody = Object.keys(details)
+      .map(
+        (key) =>
+          encodeURIComponent(key) + "=" + encodeURIComponent(details[key])
+      )
+      .join("&");
+
+    // Using WebBrowser to open the logout URL with the required parameters
+    let result = await WebBrowser.openBrowserAsync(
+      logoutEndpoint + "?" + formBody
+    );
+    console.log(result);
+    // Handle the result here. You may want to check if the logout was successful and then perform further actions in your app
+    setIsLoggedIn(false);
+    setTokenResponse({});
+    setDecodedIdToken({});
+    save("idToken", "");
+    save("accessToken", "");
+    setIsLoading(false);
   };
 
+  const getAccessToken = () => {
+    console.log("result logged:" + JSON.stringify(result));
+    setIsLoading(true);
+    if (result?.params?.code) {
+      fetch("https://api.asgardeo.io/t/interns/oauth2/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `grant_type=authorization_code&code=${result?.params?.code}&redirect_uri=${redirectUri}&client_id=${CLIENT_ID}&code_verifier=${request?.codeVerifier}`,
+      })
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          // console.log("data logged:" + JSON.stringify(data));
+          const decodedToken = jwtDecode(data.id_token);
+          setTokenResponse(data);
+          setDecodedIdToken(decodedToken);
+          console.log("access Token" + JSON.stringify(data.access_token));
+          save("accessToken", JSON.stringify(data.access_token));
+          console.log("decodedIdToken logged:" + JSON.stringify(decodedToken));
+          save("idToken", JSON.stringify(decodedToken));
+          setIsLoggedIn(true);
+        })
+        .catch((err) => {
+          console.log(err);
+          setIsLoading(false);
+          setIsLoggedIn(false);
+        });
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    (async function setResult() {
+      if (result) {
+        if (result.error) {
+          Alert.alert(
+            "Authentication error",
+            result.params.error_description || "something went wrong"
+          );
+          return;
+        }
+        if (result.type === "success") {
+          getAccessToken();
+          console.log(result.params);
+        }
+      }
+    })();
+  }, [result]);
+
   return (
-    <View style={homeScreenStyles.container}>
+    <ScrollView contentContainerStyle={homeScreenStyles.container}>
+      {isLoading && <LoadingIndicator loadingText="Signing In!" />}
       <Text style={homeScreenStyles.title}>Digi Grama App</Text>
       <Image
         source={require("../../assets/Images/main.png")}
-        style={homeScreenStyles.imageStyle}
+        style={homeScreenStyles.logoImage}
       />
+      {decodedIdToken && (
+        <Text style={homeScreenStyles.welcomeText}>
+          Welcome {decodedIdToken.given_name || ""}!
+        </Text>
+      )}
       <Text style={homeScreenStyles.additionalText}>
         Get your Graama Certficiate without any hassle
       </Text>
       <Image
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
-        style={homeScreenStyles.imageStyle}
+        style={homeScreenStyles.mainImage}
       />
-      <TouchableOpacity
-        onPress={() => navigation.navigate("UserHome")}
-        style={homeScreenStyles.button}
-      >
-        <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
-      </TouchableOpacity>
-      {/* <TouchableOpacity onPress={signIn} style={homeScreenStyles.signInBtn}>
-        <Text style={homeScreenStyles.signInBtnText}>
-          {isLoading ? "Loading..." : "Sign In"}
-        </Text>
-      </TouchableOpacity> */}
-      <TouchableOpacity
-        onPress={handleAuthorize}
-        style={homeScreenStyles.signInBtn}
-      >
-        <Text style={homeScreenStyles.signInBtnText}>
-          {isLoading ? "Loading..." : "New Authorize"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+      {/* {!isLoggedIn && (
+        <TouchableOpacity
+          onPress={() => navigation.navigate("UserHome")}
+          style={homeScreenStyles.button}
+        >
+          <Text style={homeScreenStyles.buttonText}>Guest Login</Text>
+        </TouchableOpacity>
+      )} */}
+      <View>
+        {!isLoggedIn && (
+          <TouchableOpacity
+            disabled={!request}
+            onPress={() => promptAsync()}
+            style={homeScreenStyles.button}
+          >
+            <Text style={homeScreenStyles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
+        )}
+        {isLoggedIn && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("UserHome")}
+            style={homeScreenStyles.button}
+          >
+            <Text style={homeScreenStyles.buttonText}>Explore Services</Text>
+          </TouchableOpacity>
+        )}
+        {isLoggedIn && (
+          <TouchableOpacity style={homeScreenStyles.button} onPress={logout}>
+            <Text style={homeScreenStyles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </ScrollView>
   );
 };
-
-const homeScreenStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 25,
-    textAlign: "center",
-  },
-  button: {
-    backgroundColor: "green",
-    padding: 15,
-    marginVertical: 5,
-    borderRadius: 5,
-    width: "90%", // Adjust width as necessary
-  },
-  buttonText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "bold",
-  },
-  signInBtn: {
-    elevation: 8,
-    width: 250,
-    marginTop: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: "rgb(80,201,46)",
-    borderRadius: 25,
-    cursor: "pointer",
-  },
-  signInBtnText: {
-    textAlign: "center",
-    color: "white",
-    fontSize: 20,
-  },
-  imageStyle: {
-    // Add styles for your images
-    width: "100%",
-    height: 200, // Adjust as needed
-    resizeMode: "contain",
-  },
-  additionalText: {
-    // Styles for the additional text
-    fontSize: 16,
-    marginVertical: 10,
-    textAlign: "center",
-  },
-});

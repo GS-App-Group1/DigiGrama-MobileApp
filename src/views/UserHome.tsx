@@ -1,34 +1,26 @@
-import React from "react";
-import { View, Image, TouchableOpacity, Text, StyleSheet } from "react-native";
+// @ts-nocheck
+import React, { useEffect, useState } from "react";
+import { View, Image, TouchableOpacity, Text } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { UserContext } from "../contexts/UserContext";
+import { useContext } from "react";
+import * as SecureStore from "expo-secure-store";
+import styles from "../styles/UserHomeStyles";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5", // Set your desired background color
-  },
-  button: {
-    backgroundColor: "green",
-    padding: 15,
-    marginVertical: 5,
-    borderRadius: 5,
-    width: "90%", // Adjust width as necessary
-  },
-  buttonText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "bold",
-  },
-  image: {
-    width: 300, // Adjust width as necessary
-    height: 300, // Adjust height as necessary
-    resizeMode: "contain",
-    margin: 20,
-  },
-  // Add additional styles as necessary
-});
+async function getValueFor(key: string) {
+  let result = await SecureStore.getItemAsync(key);
+  if (result) {
+    try {
+      return JSON.parse(result); // Parsing the JSON string
+    } catch (e) {
+      console.error("Error parsing JSON: ", e);
+      return null; // Return null or an appropriate default value
+    }
+  } else {
+    return null; // Return null or an appropriate default value
+  }
+}
+
 type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
@@ -46,24 +38,36 @@ type Props = {
 };
 export const UserHome: React.FC<Props> = ({ navigation }) => {
   // Define your button actions
-  const applyForCertificate = () => {
-    console.log("Apply for certificate");
-  };
-
-  const checkStatus = () => {
-    console.log("Check status");
-  };
+  const { isLoggedIn } = useContext(UserContext);
 
   const getHelp = () => {
     console.log("Get help");
   };
 
+  const [accessToken, setAccessToken] = useState("");
+  const [idToken, setIdToken] = useState("");
+
+  useEffect(() => {
+    const fetchTokens = async () => {
+      const idTokenValue = await getValueFor("idToken");
+      const accessTokenValue = await getValueFor("accessToken");
+
+      if (idTokenValue && accessTokenValue) {
+        setIdToken(idTokenValue);
+        setAccessToken(accessTokenValue);
+      }
+    };
+
+    fetchTokens();
+  }, []);
   return (
     <View style={styles.container}>
+      {isLoggedIn && <Text style={styles.text}>Hi {idToken.given_name} !</Text>}
       <Image
         source={require("../../assets/Images/interview.png")} // Replace 'img2.jpg' with your second image file name
         style={styles.image}
       />
+
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ApplyCert")}
