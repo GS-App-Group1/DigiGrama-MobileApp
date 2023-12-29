@@ -21,6 +21,7 @@ import FormComponent from "../components/UserApply";
 import UserStatus from "../components/UserStatus";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "@asgardeo/auth-react";
+import { Helmet } from "react-helmet";
 
 type UserHomePageProps = {
   signOut: () => void;
@@ -38,7 +39,7 @@ const UserHomePage = ({ signOut, username }: UserHomePageProps) => {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [getAccessToken]);
 
   const [isLargerThan768] = useMediaQuery("(min-width: 1050px)");
   const [isApply, setIsApply] = useState(true);
@@ -205,6 +206,14 @@ const UserHomePage = ({ signOut, username }: UserHomePageProps) => {
           )}
         </Box>
       </Flex>
+      {isHelp && (
+        <Helmet>
+          <script
+            src="https://www.socialintents.com/api/chat/socialintents.1.3.js#2c9fa6c38c37ef93018c47cb3c470d17"
+            async
+          ></script>
+        </Helmet>
+      )}
     </Flex>
   );
 };
