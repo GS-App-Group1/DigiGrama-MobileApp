@@ -2,15 +2,10 @@ import React, { useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { UserContext } from "./src/contexts/UserContext";
-// import { DashboardScreen } from "./src/views/Dashboard";
 import { HomeScreen } from "./src/views/Home";
 import UserHome from "./src/views/UserHome";
 import ApplyCert from "./src/views/ApplyCert";
 import CheckStatus from "./src/views/CheckStatus";
-import ExpoLogin from "./src/views/ExpoLogin";
-
-//test
-// import { authorize } from 'react-native-app-auth';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,11 +43,6 @@ function App(): JSX.Element {
             component={CheckStatus}
             options={{ title: "Check Status" }}
           />
-          <Stack.Screen
-            name="ExpoLogin"
-            component={ExpoLogin}
-            options={{ title: "Expo Login" }}
-          ></Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
     </UserContext.Provider>

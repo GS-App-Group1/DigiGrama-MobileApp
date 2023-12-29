@@ -6,87 +6,8 @@ import { LoadingIndicator } from "../components/LoadingIndicator";
 //import env variables
 import Config from "react-native-config";
 
-import {
-  Alert,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  ActivityIndicator,
-} from "react-native";
-import { TokenResponse } from "expo-auth-session";
-
-const styles = StyleSheet.create({
-  labelGreen: {
-    alignSelf: "flex-start",
-    marginLeft: "5%",
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  infoGreen: {
-    width: "90%",
-    backgroundColor: "#e0f2f1", // Light green background
-    color: "darkslategray", // Dark text color
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 5,
-  },
-  labelRed: {
-    alignSelf: "flex-start",
-    marginLeft: "5%",
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  infoRed: {
-    width: "90%",
-    backgroundColor: "#ffcccc", // Light green background
-    color: "darkslategray", // Dark text color
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 5,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    alignItems: "center",
-    paddingTop: 30,
-    paddingBottom: 30,
-  },
-  label: {
-    alignSelf: "flex-start",
-    marginLeft: "5%",
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  info: {
-    width: "90%",
-    backgroundColor: "#e6e6e6",
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 5,
-  },
-  statusButton: {
-    backgroundColor: "orange", // Color for the "Pending" status
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 20,
-    marginBottom: 20,
-    width: "90%",
-    alignItems: "center",
-  },
-  statusButtonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  // Add any additional styling as necessary
-});
-
+import { Alert, View, Text, TouchableOpacity, ScrollView } from "react-native";
+import styles from "../styles/CheckStatusStyles";
 // Dummy data for the example
 const applicationData = {
   nic: "123456789V",
@@ -246,11 +167,11 @@ const CheckStatus = () => {
         </TouchableOpacity>
         <Text style={styles.labelGreen}>NIC</Text>
         <Text style={styles.infoGreen}>{nic}</Text>
-        <Text style={styles.label}>Request Time</Text>
-        <Text style={styles.info}>{formatTimestamp(requestTime)}</Text>
+        <Text style={styles.labelGreen}>Request Time</Text>
+        <Text style={styles.infoGreen}>{formatTimestamp(requestTime)}</Text>
 
-        <Text style={styles.labelRed}>GS Note</Text>
-        <Text style={styles.infoRed}>{gsNote}</Text>
+        <Text style={styles.labelGreen}>GS Note</Text>
+        <Text style={styles.infoGreen}>{gsNote.trim() ? gsNote : "N/A"}</Text>
         <Text style={styles.label}>Address</Text>
         <Text style={styles.info}>{address}</Text>
 

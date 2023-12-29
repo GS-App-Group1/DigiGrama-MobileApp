@@ -1,15 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { useContext } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  Button,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, Image, ScrollView } from "react-native";
 import "core-js/stable/atob";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
@@ -18,6 +10,7 @@ import { UserContext } from "../contexts/UserContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as SecureStore from "expo-secure-store";
 import { LoadingIndicator } from "../components/LoadingIndicator";
+import homeScreenStyles from "../styles/HomeStyles";
 
 async function save(key, value) {
   await SecureStore.setItemAsync(key, value);
@@ -26,7 +19,6 @@ type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
   ApplyCert: undefined;
-  ExpoLogin: undefined;
 };
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -40,11 +32,10 @@ type Props = {
 
 WebBrowser.maybeCompleteAuthSession();
 
-const redirectUri = AuthSession.makeRedirectUri();
+// const redirectUri = AuthSession.makeRedirectUri();
+const redirectUri = AuthSession.makeRedirectUri({ scheme: "myapp" });
 
-// const CLIENT_ID = "JLo7FfeUqjXIZhy7JrtfqKCzIfka";
 const CLIENT_ID = "4wygss8FAZVLEY3S2MZhM1QDfB8a";
-const CLIENT_ID_BASE64 = "NHd5Z3NzOEZBWlZMRVkzUzJNWmhNMVFEZkI4YQ==";
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const discovery = AuthSession.useAutoDiscovery(
@@ -52,8 +43,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   );
   const [tokenResponse, setTokenResponse] = useState({});
   const [decodedIdToken, setDecodedIdToken] = useState({});
-  const [key, onChangeKey] = React.useState("Your key here");
-  const [value, onChangeValue] = React.useState("Your value here");
   const { isLoggedIn } = useContext(UserContext);
 
   const [request, result, promptAsync] = AuthSession.useAuthRequest(
@@ -61,7 +50,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       redirectUri,
       clientId: CLIENT_ID,
       responseType: "code",
-      // scopes: ["openid", "profile", "email", "address", "phone"],
       scopes: [
         "openid",
         "profile",
@@ -136,7 +124,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           setDecodedIdToken(decodedToken);
           console.log("access Token" + JSON.stringify(data.access_token));
           save("accessToken", JSON.stringify(data.access_token));
-          console.log("refresh Token" + JSON.stringify(data.refresh_token));
           console.log("decodedIdToken logged:" + JSON.stringify(decodedToken));
           save("idToken", JSON.stringify(decodedToken));
           setIsLoggedIn(true);
@@ -223,66 +210,3 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
     </ScrollView>
   );
 };
-
-const homeScreenStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 25,
-    textAlign: "center",
-  },
-  button: {
-    backgroundColor: "green",
-    padding: 15,
-    marginVertical: 5,
-    borderRadius: 5,
-    width: 300, // Adjust width as necessary
-  },
-  buttonText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "bold",
-  },
-  signInBtn: {
-    elevation: 8,
-    width: 250,
-    marginTop: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: "rgb(80,201,46)",
-    borderRadius: 25,
-    cursor: "pointer",
-  },
-  signInBtnText: {
-    textAlign: "center",
-    color: "white",
-    fontSize: 20,
-  },
-  logoImage: {
-    height: 100,
-    width: "70%",
-    resizeMode: "contain",
-  },
-  mainImage: {
-    // Add styles for your images
-    width: "70%",
-    height: 200, // Adjust as needed
-    resizeMode: "contain",
-  },
-  additionalText: {
-    // Styles for the additional text
-    fontSize: 16,
-    marginVertical: 10,
-    textAlign: "center",
-  },
-  welcomeText: {
-    // Styles for the welcome text
-    fontSize: 20,
-    marginVertical: 10,
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-});

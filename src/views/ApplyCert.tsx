@@ -4,6 +4,9 @@ import * as SecureStore from "expo-secure-store";
 import { UserContext } from "../contexts/UserContext";
 import { Picker } from "@react-native-picker/picker";
 import { LoadingIndicator } from "../components/LoadingIndicator";
+import * as ImagePicker from "expo-image-picker";
+import { Image } from "react-native";
+import styles from "../styles/ApplyCertStyles";
 
 import {
   Alert,
@@ -11,84 +14,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
 } from "react-native";
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    alignItems: "center",
-    paddingTop: 30,
-    paddingBottom: 30,
-  },
-  input: {
-    width: "90%",
-    backgroundColor: "#fff",
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 5,
-  },
-  buttonContainer: {
-    width: "90%",
-    backgroundColor: "green",
-    borderRadius: 5,
-    padding: 15,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  modalBackground: {
-    flex: 1,
-    alignItems: "center",
-    flexDirection: "column",
-    justifyContent: "space-around",
-    backgroundColor: "#00000040", // Semi-transparent background
-  },
-  activityIndicatorWrapper: {
-    backgroundColor: "#FFFFFF",
-    height: 150,
-    width: 200,
-    borderRadius: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-around",
-  },
-  loadingText: {
-    marginTop: 10,
-  },
-  fieldName: {
-    alignItems: "flex-start",
-    fontSize: 14,
-    textAlign: "left",
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-    textAlign: "left", // Align text to the left
-    alignSelf: "stretch", // Stretch to fill the width of the parent container
-    // Add any other styling you need for the label
-    marginLeft: 20,
-    borderRadius: 5,
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-    width: "90%",
-    backgroundColor: "#fff",
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 5,
-    // You can add more styling as needed
-  },
-  // Add any additional styling as necessary
-});
 
 export const ApplyCert = () => {
   const [nic, setNic] = useState("");
@@ -101,8 +28,49 @@ export const ApplyCert = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [idToken, setIdToken] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [image, setImage] = useState(null);
 
-  const { isLoggedIn } = useContext(UserContext);
+  const [errors, setErrors] = useState({
+    address: "",
+    gsDivision: "",
+    civilStatus: "",
+    presentOccupation: "",
+    reason: "",
+  });
+
+  const validateFields = () => {
+    let newErrors = {};
+    let isValid = true;
+
+    if (address.trim() === "") {
+      newErrors.address = "*Address is required";
+      isValid = false;
+    }
+
+    if (gsDivision.trim() === "") {
+      newErrors.gsDivision = "*GS Division is required";
+      isValid = false;
+    }
+
+    if (civilStatus.trim() === "") {
+      newErrors.civilStatus = "*Civil Status is required";
+      isValid = false;
+    }
+
+    if (presentOccupation.trim() === "") {
+      newErrors.presentOccupation = "*Present Occupation is required";
+      isValid = false;
+    }
+
+    if (reason.trim() === "") {
+      newErrors.reason = "*Reason is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   useEffect(() => {
     const fetchIdToken = async () => {
       const token = await getValueFor("idToken");
@@ -132,71 +100,116 @@ export const ApplyCert = () => {
       return null; // Return null or an appropriate default value
     }
   }
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.uri);
+    } else if (result.canceled) {
+      alert("You have cancelled the image picker!");
+    } else {
+      alert("Something went wrong!");
+    }
+  };
+
+  const takePhoto = async () => {
+    // Ask for camera permissions first
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      alert("Sorry, we need camera roll permissions to make this work!");
+      return;
+    }
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.uri);
+    } else if (result.canceled) {
+      alert("You have cancelled the camera!");
+    } else {
+      alert("Something went wrong!");
+    }
+  };
 
   const handleSubmit = async () => {
-    setIsLoading(true); // Start loading
-    // const API_KEY = process.env.EXPO_PUBLIC_SUBMIT_REQUEST_API;
-    const API_KEY =
-      "J4NXQiOiJZell6WTJNNVpXWTNZbVF4TTJZME16UTNOMk16WXpka05EWXlORE14TWpnd016RTNOamM1T1RSbE9UWTVaR1JsWkRJd01qVTBZakUzTURNeE9UQTBZZyIsImtpZCI6Ill6WXpZMk01WldZM1ltUXhNMlkwTXpRM04yTXpZemRrTkRZeU5ETXhNamd3TXpFM05qYzVPVFJsT1RZNVpHUmxaREl3TWpVMFlqRTNNRE14T1RBMFlnX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIyMGRjNWQ4MS1iOTJjLTRjZDItODBkNy1mODk4YWQzYjAyZjYiLCJhdXQiOiJBUFBMSUNBVElPTl9VU0VSIiwicm9sZXMiOiJldmVyeW9uZSIsImlzcyI6Imh0dHBzOlwvXC9hcGkuYXNnYXJkZW8uaW9cL3RcL2ludGVybnNcL29hdXRoMlwvdG9rZW4iLCJncm91cHMiOlsiRGlnaUdyYW1hMi1Vc2VycyJdLCJuaWMiOiIxMjMxMjMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJBbm9zaGFuSiIsImdpdmVuX25hbWUiOiJBbm9zaGFuIiwidXNlcmlkIjoiMjBkYzVkODEtYjkyYy00Y2QyLTgwZDctZjg5OGFkM2IwMmY2IiwiY2xpZW50X2lkIjoiWUdtdUpPckVjSTVmV1B6QWMwaXBfMFZCa0NBYSIsImF1ZCI6WyJZR211Sk9yRWNJNWZXUHpBYzBpcF8wVkJrQ0FhIiwiY2hvcmVvOmRlcGxveW1lbnQ6c2FuZGJveCJdLCJuYmYiOjE3MDI5ODYyNTQsImF6cCI6IllHbXVKT3JFY0k1ZldQekFjMGlwXzBWQmtDQWEiLCJvcmdfaWQiOiJjZjNhNDE3Ni01NGM5LTQ1NDctYmNkNi1jNmZlNDAwYWQwZDgiLCJzY29wZSI6ImFkZHJlc3MgZW1haWwgZ3JvdXBzIG9wZW5pZCBwcm9maWxlIHJvbGVzIiwiZ3JhbWFfZGl2aXNpb24iOiJLYW5keSIsImV4cCI6MTcwMjk4NzE1NCwib3JnX25hbWUiOiJpbnRlcm5zIiwiaWF0IjoxNzAyOTg2MjU0LCJmYW1pbHlfbmFtZSI6IkoiLCJqdGkiOiJkYzk4NzQ1MC03YWI2LTRjMzYtYWZjZi01MDY4Njk0MGYyY2YiLCJlbWFpbCI6ImFub3NoYW5Ad3NvMi5jb20iLCJ1c2VybmFtZSI6ImFub3NoYW5Ad3NvMi5jb20ifQ.Ouv_E3Eo0F502rCkD7GHVQtG_WZaKovaXChH2N8QFMaZEFPhJq3RThMYzPWLOGYz8S778Sh5Xz_kZHfqcRyS9IgTGlHp5-IePI-mKqiM3v3I1AhQ05XfuaVXRBeQAlGv2Fuw4HSXNvP5jFFaYij1QuumqM3LTRFE8mjOJfqWBT01JxyNTf6TpWhjZ9Zu3ApggJ9_a87gPVLGh-t8Vww8KK5vCnhWuU70N0_eeqQ2NM2eUMUfRHNWWpUI9PPtREnyUM5RBLLF1nDlOkEvOK7gxord0HAlu4fbCYpzarOb3J-i800MZf6_Q9wDLvSeilIj_FZQKWItQjdxkYJugwYilA";
-    const formData = {
-      _id: new Date().toISOString(),
-      nic: idToken.nic,
-      email: idToken.email,
-      address,
-      civilStatus,
-      presentOccupation,
-      reason,
-      gsNote: "",
-      gsDivision,
-      requestTime: new Date().toISOString(),
-      status: "Pending",
-    };
+    if (validateFields()) {
+      setIsLoading(true); // Start loading
+      const formData = {
+        _id: new Date().toISOString(),
+        nic: idToken.nic,
+        email: idToken.email,
+        address,
+        civilStatus,
+        presentOccupation,
+        reason,
+        gsNote: "",
+        gsDivision,
+        requestTime: new Date().toISOString(),
+        status: "Pending",
+      };
 
-    const testData = {
-      _id: new Date().toISOString(),
-      address: "string",
-      civilStatus: "string",
-      email: "string",
-      gsDivision: "string",
-      gsNote: "string",
-      nic: "string",
-      presentOccupation: "string",
-      reason: "string",
-      requestTime: "string",
-      status: "string",
-    };
+      const testData = {
+        _id: new Date().toISOString(),
+        address: "string",
+        civilStatus: "string",
+        email: "string",
+        gsDivision: "string",
+        gsNote: "string",
+        nic: "string",
+        presentOccupation: "string",
+        reason: "string",
+        requestTime: "string",
+        status: "string",
+      };
 
-    console.log(JSON.stringify(testData));
-    try {
-      const response = await fetch(
-        "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-prod.e1-us-east-azure.choreoapis.dev/hbld/mainservice-tcf/mainapi-bf2/v1/userRequest",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + accessToken, // Replace with your actual API Key
-          },
-          body: JSON.stringify(formData),
+      try {
+        const response = await fetch(
+          "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-prod.e1-us-east-azure.choreoapis.dev/hbld/mainservice-tcf/mainapi-bf2/v1/userRequest",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + accessToken, // Replace with your actual API Key
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+        if (response.status != 202) {
+          try {
+            const jsonResponse = await response.json();
+            console.log(jsonResponse);
+            Alert.alert(
+              "Error",
+              jsonResponse.message || "Something went wrong."
+            );
+            // Process jsonResponse
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+            Alert.alert("Error", "Unable to connect to the server.");
+          }
+        } else {
+          Alert.alert("Success", "Application submitted successfully!");
         }
-      );
-      if (response.status != 202) {
-        try {
-          const jsonResponse = await response.json();
-          console.log(jsonResponse);
-          Alert.alert("Error", jsonResponse.message || "Something went wrong.");
-          // Process jsonResponse
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          Alert.alert("Error", "Unable to connect to the server.");
-        }
-      } else {
-        Alert.alert("Success", "Application submitted successfully!");
+      } catch (error) {
+        // Handle network errors
+        console.log(error);
+      } finally {
+        setIsLoading(false); // End loading
       }
-    } catch (error) {
-      // Handle network errors
-      console.log(error);
-    } finally {
-      setIsLoading(false); // End loading
     }
   };
 
@@ -250,6 +263,9 @@ export const ApplyCert = () => {
           onChangeText={setAddress}
           autoCapitalize="none"
         />
+        {errors.address ? (
+          <Text style={styles.errorText}>{errors.address}</Text>
+        ) : null}
 
         <Text style={styles.label}>GS Division</Text>
         <TextInput
@@ -259,6 +275,9 @@ export const ApplyCert = () => {
           onChangeText={setGsDivision}
           autoCapitalize="none"
         />
+        {errors.gsDivision ? (
+          <Text style={styles.errorText}>{errors.gsDivision}</Text>
+        ) : null}
 
         <Text style={styles.label}>Civil Status</Text>
         <Picker
@@ -271,6 +290,9 @@ export const ApplyCert = () => {
           <Picker.Item label="Divorced" value="divorced" />
           <Picker.Item label="Widowed" value="widowed" />
         </Picker>
+        {errors.civilStatus ? (
+          <Text style={styles.errorText}>{errors.civilStatus}</Text>
+        ) : null}
 
         <Text style={styles.label}>Present Occupation</Text>
         <TextInput
@@ -280,7 +302,9 @@ export const ApplyCert = () => {
           onChangeText={setPresentOccupation}
           autoCapitalize="none"
         />
-
+        {errors.presentOccupation ? (
+          <Text style={styles.errorText}>{errors.presentOccupation}</Text>
+        ) : null}
         <Text style={styles.label}>Reason</Text>
         <TextInput
           style={styles.input}
@@ -289,7 +313,50 @@ export const ApplyCert = () => {
           onChangeText={setReason}
           autoCapitalize="none"
         />
+        {errors.reason ? (
+          <Text style={styles.errorText}>{errors.reason}</Text>
+        ) : null}
+        <Text style={styles.label}>NIC Image</Text>
+        {image && (
+          <Image
+            source={{ uri: image }}
+            style={{ width: 200, height: 200, marginTop: 10 }}
+          />
+        )}
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <TouchableOpacity
+            style={[
+              styles.buttonContainer,
+              {
+                flex: 1,
+                marginRight: 10,
+                marginLeft: 20,
+                backgroundColor: "lightgreen",
+              }, // Added marginRight for spacing
+            ]}
+            onPress={pickImage}
+          >
+            <Text
+              style={[styles.buttonText, { fontSize: 16, fontStyle: "normal" }]}
+            >
+              Pick an Image
+            </Text>
+          </TouchableOpacity>
 
+          <TouchableOpacity
+            style={[
+              styles.buttonContainer,
+              { flex: 1, marginRight: 20, backgroundColor: "lightgreen" }, // Changed from alignContent to alignItems
+            ]}
+            onPress={takePhoto}
+          >
+            <Text
+              style={[styles.buttonText, { fontSize: 16, fontStyle: "normal" }]}
+            >
+              Take a Photo
+            </Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={styles.buttonContainer} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Apply</Text>
         </TouchableOpacity>

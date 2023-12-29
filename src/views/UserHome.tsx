@@ -1,19 +1,11 @@
 // @ts-nocheck
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  View,
-  Image,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-} from "react-native";
+import { View, Image, TouchableOpacity, Text } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { UserContext } from "../contexts/UserContext";
-import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
 import { useContext } from "react";
-// const { isLoggedIn } = useContext(UserContext);
 import * as SecureStore from "expo-secure-store";
+import styles from "../styles/UserHomeStyles";
 
 async function getValueFor(key: string) {
   let result = await SecureStore.getItemAsync(key);
@@ -29,39 +21,6 @@ async function getValueFor(key: string) {
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5", // Set your desired background color
-  },
-  button: {
-    backgroundColor: "green",
-    padding: 15,
-    marginVertical: 5,
-    borderRadius: 5,
-    width: "90%", // Adjust width as necessary
-  },
-  buttonText: {
-    textAlign: "center",
-    color: "white",
-    fontWeight: "bold",
-  },
-  image: {
-    width: 300, // Adjust width as necessary
-    height: 300, // Adjust height as necessary
-    resizeMode: "contain",
-    margin: 20,
-  },
-  text: {
-    fontSize: 20,
-    textAlign: "center",
-    margin: 10,
-    fontWeight: "bold",
-  },
-  // Add additional styles as necessary
-});
 type RootStackParamList = {
   Home: undefined;
   UserHome: undefined; // Add parameters here if NewPage expects any props
@@ -80,14 +39,6 @@ type Props = {
 export const UserHome: React.FC<Props> = ({ navigation }) => {
   // Define your button actions
   const { isLoggedIn } = useContext(UserContext);
-
-  const applyForCertificate = () => {
-    console.log("Apply for certificate");
-  };
-
-  const checkStatus = () => {
-    console.log("Check status");
-  };
 
   const getHelp = () => {
     console.log("Get help");
@@ -109,8 +60,6 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
 
     fetchTokens();
   }, []);
-  console.log("In UserHome : Access Token Value: ", accessToken);
-  console.log("In UserHome : Id Token Value: ", idToken);
   return (
     <View style={styles.container}>
       {isLoggedIn && <Text style={styles.text}>Hi {idToken.given_name} !</Text>}
