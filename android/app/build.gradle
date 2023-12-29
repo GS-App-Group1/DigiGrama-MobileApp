@@ -81,7 +81,7 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.digigraama"
+    namespace 'com.g1.digigrama'
     defaultConfig {
         applicationId 'com.g1.digigrama'
         minSdkVersion rootProject.ext.minSdkVersion

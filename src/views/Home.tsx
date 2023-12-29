@@ -33,7 +33,10 @@ type Props = {
 WebBrowser.maybeCompleteAuthSession();
 
 // const redirectUri = AuthSession.makeRedirectUri();
-const redirectUri = AuthSession.makeRedirectUri({ scheme: "myapp" });
+const redirectUri = AuthSession.makeRedirectUri({
+  scheme: "myapp",
+  path: "auth",
+});
 
 const CLIENT_ID = "4wygss8FAZVLEY3S2MZhM1QDfB8a";
 
