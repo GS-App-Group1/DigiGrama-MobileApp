@@ -172,8 +172,12 @@ const CheckStatus = () => {
 
         <Text style={styles.labelGreen}>GS Note</Text>
         <Text style={styles.infoGreen}>{gsNote.trim() ? gsNote : "N/A"}</Text>
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.info}>{email}</Text>
         <Text style={styles.label}>Address</Text>
         <Text style={styles.info}>{address}</Text>
+        <Text style={styles.label}>GS Division</Text>
+        <Text style={styles.info}>{gsDivision}</Text>
 
         <Text style={styles.label}>Civil Status</Text>
         <Text style={styles.info}>{civilStatus}</Text>
@@ -183,12 +187,6 @@ const CheckStatus = () => {
 
         <Text style={styles.label}>Reason</Text>
         <Text style={styles.info}>{reason}</Text>
-
-        <Text style={styles.label}>GS Division</Text>
-        <Text style={styles.info}>{gsDivision}</Text>
-
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.info}>{email}</Text>
       </View>
     </ScrollView>
   );

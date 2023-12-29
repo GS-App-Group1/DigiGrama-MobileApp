@@ -7,6 +7,7 @@ import { LoadingIndicator } from "../components/LoadingIndicator";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 import styles from "../styles/ApplyCertStyles";
+import axios from "axios";
 
 import {
   Alert,
@@ -36,6 +37,7 @@ export const ApplyCert = () => {
     civilStatus: "",
     presentOccupation: "",
     reason: "",
+    image: "",
   });
 
   const validateFields = () => {
@@ -64,6 +66,11 @@ export const ApplyCert = () => {
 
     if (reason.trim() === "") {
       newErrors.reason = "*Reason is required";
+      isValid = false;
+    }
+
+    if (image === null) {
+      newErrors.image = "*NIC Image is required";
       isValid = false;
     }
 
@@ -138,6 +145,7 @@ export const ApplyCert = () => {
 
     if (!result.canceled) {
       setImage(result.uri);
+      console.log(result.uri);
     } else if (result.canceled) {
       alert("You have cancelled the camera!");
     } else {
@@ -145,6 +153,42 @@ export const ApplyCert = () => {
     }
   };
 
+  const uploadImage = async (imageUri, requestID) => {
+    try {
+      const url =
+        "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-dev.e1-us-east-azure.choreoapis.dev/hbld/nicimageapi-nzr/nicimagesapi-50f/v1.0/upload";
+
+      // Fetching the image and converting to blob
+      const imageResponse = await fetch(imageUri);
+      if (!imageResponse.ok) {
+        throw new Error("Error fetching image");
+      }
+      const blob = await imageResponse.blob();
+      // Axios request configuration
+      const config = {
+        // params: { requestID: requestID }, // Append requestID as a query parameter
+        method: "post",
+        maxBodyLength: Infinity,
+        url: url + "?requestID=" + encodeURIComponent(requestID),
+        headers: {
+          Accept: "*/*",
+          Authorization: "Bearer " + accessToken,
+          "Content-Type": "image/jpeg", // Ensure correct content type for FormData
+        },
+        data: blob,
+      };
+      const response = await axios(config);
+      if (response.status === 201 || response.status === 200) {
+        console.log(config.url);
+        console.log("Upload successful:", response.data);
+      } else {
+        console.error("Upload failed with status:", response.status);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      Alert.alert("Error", "Unable to connect to the server.");
+    }
+  };
   const handleSubmit = async () => {
     if (validateFields()) {
       setIsLoading(true); // Start loading
@@ -175,8 +219,9 @@ export const ApplyCert = () => {
         requestTime: "string",
         status: "string",
       };
-
       try {
+        const uploadStatus = await uploadImage(image, formData._id); // Upload the image
+        console.log(uploadStatus);
         const response = await fetch(
           "https://cf3a4176-54c9-4547-bcd6-c6fe400ad0d8-prod.e1-us-east-azure.choreoapis.dev/hbld/mainservice-tcf/mainapi-bf2/v1/userRequest",
           {
@@ -202,7 +247,9 @@ export const ApplyCert = () => {
             Alert.alert("Error", "Unable to connect to the server.");
           }
         } else {
+          console.log(formData);
           Alert.alert("Success", "Application submitted successfully!");
+          navigation.navigate("UserHome");
         }
       } catch (error) {
         // Handle network errors
@@ -317,6 +364,9 @@ export const ApplyCert = () => {
           <Text style={styles.errorText}>{errors.reason}</Text>
         ) : null}
         <Text style={styles.label}>NIC Image</Text>
+        {errors.image ? (
+          <Text style={styles.errorText}>{errors.image}</Text>
+        ) : null}
         {image && (
           <Image
             source={{ uri: image }}

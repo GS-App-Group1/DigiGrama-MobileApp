@@ -62,6 +62,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         "roles",
         "urn:interns:mainservicetcfmainapi:User",
         "urn:interns:mainservicetcfmainapi:Admin",
+        "download_nic",
+        "upload_nic",
       ],
     },
     discovery
@@ -201,7 +203,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             onPress={() => navigation.navigate("UserHome")}
             style={homeScreenStyles.button}
           >
-            <Text style={homeScreenStyles.buttonText}>Go to Dashboard</Text>
+            <Text style={homeScreenStyles.buttonText}>Explore Services</Text>
           </TouchableOpacity>
         )}
         {isLoggedIn && (
