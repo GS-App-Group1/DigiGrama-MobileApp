@@ -161,9 +161,7 @@ const CheckStatus = () => {
 
           // If the button should be interactive, you can add onPress here
         >
-          <Text style={styles.statusButtonText}>
-            Status: {applicationData.status}
-          </Text>
+          <Text style={styles.statusButtonText}>Status: {status}</Text>
         </TouchableOpacity>
         <Text style={styles.labelGreen}>NIC</Text>
         <Text style={styles.infoGreen}>{nic}</Text>

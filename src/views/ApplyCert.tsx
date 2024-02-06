@@ -8,6 +8,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 import styles from "../styles/ApplyCertStyles";
 import axios from "axios";
+import * as Crypto from "expo-crypto";
 
 import {
   Alert,
@@ -193,7 +194,7 @@ export const ApplyCert = () => {
     if (validateFields()) {
       setIsLoading(true); // Start loading
       const formData = {
-        _id: new Date().toISOString(),
+        _id: Crypto.randomUUID(),
         nic: idToken.nic,
         email: idToken.email,
         address,

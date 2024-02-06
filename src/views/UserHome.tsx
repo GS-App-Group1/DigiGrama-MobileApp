@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useState } from "react";
-import { View, Image, TouchableOpacity, Text } from "react-native";
+import { Alert, View, Image, TouchableOpacity, Text } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { UserContext } from "../contexts/UserContext";
 import { useContext } from "react";
@@ -42,6 +42,7 @@ export const UserHome: React.FC<Props> = ({ navigation }) => {
 
   const getHelp = () => {
     console.log("Get help");
+    Alert.alert("Get Help!", "Contact pasindufo@wso2.com!");
   };
 
   const [accessToken, setAccessToken] = useState("");
