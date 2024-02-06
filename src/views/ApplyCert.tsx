@@ -203,7 +203,7 @@ export const ApplyCert = () => {
         gsNote: "",
         gsDivision,
         requestTime: new Date().toISOString(),
-        status: "Pending",
+        status: "pending",
       };
 
       const testData = {
