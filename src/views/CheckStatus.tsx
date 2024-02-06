@@ -22,7 +22,7 @@ const CheckStatus = () => {
   // This status color could change based on the application status
   const statusColor: { [key: string]: string } = {
     pending: "orange",
-    success: "green",
+    accepted: "green",
     rejected: "red",
   };
   const [nic, setNic] = useState("");
